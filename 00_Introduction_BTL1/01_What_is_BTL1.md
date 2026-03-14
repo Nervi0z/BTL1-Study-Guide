@@ -1,75 +1,49 @@
-<div align="center">
+# What is BTL1?
 
-![](header.svg)
-
-</div>
-
-<br>
-
-Practical reference for Security Blue Team Level 1 — focused on junior analysts and Tier 1 SOC roles.
-
-This repo maps directly to the six BTL1 domains. Built for people learning by doing — not theory-first. If you're working toward your first SOC role and comfortable in a terminal, this is your field guide.
+The Blue Team Level 1 certification is a fully practical assessment from Security Blue Team. No multiple choice, no theory questions — you get 24 hours in a simulated corporate environment and a blank report template. Your job is to work an active incident from initial triage to documented conclusions.
 
 ---
 
-## Exam format
+## The format
 
 | | |
 | :--- | :--- |
-| **Format** | Fully practical — no multiple choice. Simulated corporate intrusion, work it like a real incident. |
-| **Duration** | 24 hours to investigate, extract evidence, and write the report. |
-| **Environment** | Cloud-hosted lab: multi-OS endpoints, network sensors, pre-configured SIEM (Splunk or Elastic). |
-| **Evidence sources** | Disk images (`DD`/`E01`), memory dumps (`RAM`), packet captures (`PCAP`), SIEM logs. |
-| **Deliverable** | Formal incident report — attack timeline, compromised assets, technical proof per finding. |
+| **Type** | Fully hands-on. Simulated corporate intrusion. |
+| **Duration** | 24 hours to investigate and write the report. |
+| **Environment** | Cloud-hosted lab — multi-OS endpoints, network sensors, pre-configured SIEM. |
+| **Evidence** | Disk images, memory dumps, PCAPs, SIEM logs. |
+| **Deliverable** | Formal incident report: attack timeline, compromised assets, evidence per finding. |
 
 ---
 
-## Prerequisites
+## The five domains
 
-You don't need a security background to pass, but you do need these foundations:
+BTL1 tests you across five areas. Each one shows up in the lab — not in isolation, but woven into a single incident scenario that forces you to move between them.
 
-**Networking** — TCP/IP stack, DNS resolution, HTTP/S traffic flow, common ports and protocols.
-
-**Windows** — Registry hive structure, event logging (Sysmon, Security), process execution trees.
-
-**Linux** — File system hierarchy, daemon execution, permission models.
-
-**CLI** — Bash and PowerShell navigation, data manipulation, log parsing.
-
----
-
-## Domain coverage
-
-| Domain | Focus | Tools |
-| :--- | :--- | :--- |
-| Phishing analysis | SMTP header inspection, payload RE, URL pivoting | Any.run, PhishTool, CyberChef |
-| Threat intelligence | TTP categorization, IOC enrichment, adversary mapping | MITRE ATT&CK, VirusTotal, OTX |
-| Digital forensics | Disk & memory artifact analysis | Autopsy, Volatility 3, KAPE |
-| SIEM analysis | Log correlation, SPL/KQL query writing | Splunk, Elastic |
-| Network analysis | DPI, lateral movement detection, C2 identification | Wireshark, tshark, Zeek |
-| Incident response | Live triage, containment, evidence preservation | Sysinternals, native OS CLI |
+| Domain | What you're actually doing |
+| :--- | :--- |
+| Phishing Analysis | Pulling apart the initial email — headers, payload, infrastructure |
+| Threat Intelligence | Mapping observed TTPs to ATT&CK, enriching IOCs |
+| Digital Forensics | Disk and memory analysis — what ran, what changed, what was extracted |
+| SIEM Analysis | Correlating events across log sources using SPL or KQL |
+| Network Analysis | Reading PCAPs — lateral movement, C2 traffic, data exfiltration |
 
 ---
 
-## Structure
+## What it's not
 
-```text
-.
-├── 00_introduction/        # triage methodology
-├── 01_phishing/            # header analysis, attachment extraction
-├── 02_threat_intel/        # IOC management, ATT&CK TTP mapping
-├── 03_forensics/
-│   ├── disk/               # NTFS, registry, file carving
-│   └── memory/             # Volatility profiles, injection detection
-├── 04_siem/                # SPL structures, correlation rules
-├── 05_network/             # BPF filters, PCAP carving
-└── 06_incident_response/   # IR lifecycle, live response
-```
+BTL1 is not an entry-level theory course with a quiz at the end. It's closer to a condensed version of what a Tier 1/2 analyst does during an active incident — minus the on-call stress and the ticket queue.
+
+If you're coming from a purely theoretical background, the lab will feel disorienting at first. That's expected. The point is to close that gap.
 
 ---
 
-> General technical documentation and open-source tool references only. No proprietary exam content, lab infrastructure details, or restricted BTL1 materials — per SBT NDA.
+## Who it's built for
 
----
+You'll get the most out of BTL1 if you're:
 
-MIT License · See `LICENSE`
+- Working toward your first SOC or DFIR role and want something concrete to show
+- Already in a security role but want structured practice across all five domains
+- Comfortable in a terminal and looking for a certification that reflects real work
+
+> You don't need a security background to pass, but you do need solid foundations in networking, Windows/Linux fundamentals, and CLI basics. If those feel shaky, spend time there first.
