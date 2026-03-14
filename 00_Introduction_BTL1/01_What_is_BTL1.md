@@ -1,61 +1,75 @@
-# BTL1 Certification Blueprint
+<div align="center">
 
-The Blue Team Level 1 (BTL1) by Security Blue Team is a practical evaluation framework designed for Tier 1 Security Operations Center (SOC) analysts and incident responders. This document outlines the technical scope, assessment parameters, and operational domains covered by the certification and this repository.
+![](header.svg)
 
-> **Operational Objective:** To validate that candidates can transition from theoretical security concepts to hands-on, terminal-based execution within a live, simulated corporate intrusion scenario.
+</div>
 
----
+<br>
 
-## 1. Assessment Methodology
+Practical reference for Security Blue Team Level 1 — focused on junior analysts and Tier 1 SOC roles.
 
-BTL1 operates strictly as a practical assessment, diverging entirely from traditional multiple-choice examinations. Candidates are deployed into a simulated corporate environment and tasked with conducting a full-scope incident investigation.
-
-* **Operational Focus:** The evaluation is exclusively anchored in defensive operations—specifically threat detection, artifact analysis, and incident response—rather than offensive (Red Team) simulation.
-* **Skill Validation:** Passing requires the successful hands-on execution of phishing analysis, SIEM alert triage, artifact extraction across both volatile and non-volatile memory, and deep packet analysis.
-* **Artifact Correlation:** Evaluators expect analysts to stitch together a cohesive timeline by correlating technical evidence across multiple, isolated data telemetry sources.
-
-## 2. Prerequisite Knowledge Baseline
-
-To effectively navigate the BTL1 framework and utilize the playbooks within this repository, engineers must possess a foundational understanding of the following areas:
-
-* **Networking Fundamentals:** * TCP/IP stack mechanics and DNS resolution.
-  * HTTP/S traffic flow and common ports/protocols.
-* **Operating System Architecture:** * *Windows:* Registry hive structures, event logging (Sysmon/Security), and process execution trees.
-  * *Linux:* File system hierarchy, daemon execution, and permission models.
-* **Command-Line Proficiency:** System navigation and data manipulation via Bash and PowerShell.
-* **Security Telemetry:** Understanding of how logging mechanisms (Firewalls, IDS/IPS, AV/EDR) generate, format, and store event data.
+This repo maps directly to the six BTL1 domains. Built for people learning by doing — not theory-first. If you're working toward your first SOC role and comfortable in a terminal, this is your field guide.
 
 ---
 
-## 3. Exam Execution Parameters
+## Exam format
 
-The certification assessment is conducted under strict operational constraints, simulating the SLA pressure of a live Incident Response engagement:
-
-* **Engagement Window:** A continuous 24-hour timeframe to conduct the investigation, extract evidence, and draft the final report.
-* **Infrastructure Access:** Candidates are granted access to a cloud-hosted virtual lab containing multi-OS endpoints, network sensors, and pre-configured SIEM infrastructure (e.g., Splunk/Elastic).
-* **Investigation Objective:** Trace a multi-stage intrusion by analyzing varied data sources:
-  * Disk images (raw `DD`/`E01` files).
-  * Volatile memory dumps (`RAM`).
-  * Packet captures (`PCAP`).
-  * Aggregated SIEM logs.
-* **Final Deliverable:** A formal, evidence-backed Incident Report detailing the attack timeline, identifying compromised assets, and addressing specific scenario injects with concrete technical proof.
+| | |
+| :--- | :--- |
+| **Format** | Fully practical — no multiple choice. Simulated corporate intrusion, work it like a real incident. |
+| **Duration** | 24 hours to investigate, extract evidence, and write the report. |
+| **Environment** | Cloud-hosted lab: multi-OS endpoints, network sensors, pre-configured SIEM (Splunk or Elastic). |
+| **Evidence sources** | Disk images (`DD`/`E01`), memory dumps (`RAM`), packet captures (`PCAP`), SIEM logs. |
+| **Deliverable** | Formal incident report — attack timeline, compromised assets, technical proof per finding. |
 
 ---
 
-## 4. Operational Domain Mapping
+## Prerequisites
 
-The certification framework—and consequently, the architectural structure of this playbook repository—is mapped to six core defensive domains. 
+You don't need a security background to pass, but you do need these foundations:
 
-| Domain | Operational Focus | Primary Toolset / Focus Area |
+**Networking** — TCP/IP stack, DNS resolution, HTTP/S traffic flow, common ports and protocols.
+
+**Windows** — Registry hive structure, event logging (Sysmon, Security), process execution trees.
+
+**Linux** — File system hierarchy, daemon execution, permission models.
+
+**CLI** — Bash and PowerShell navigation, data manipulation, log parsing.
+
+---
+
+## Domain coverage
+
+| Domain | Focus | Tools |
 | :--- | :--- | :--- |
-| **Phishing Analysis** | Inspection of SMTP headers, reverse-engineering payloads, and URL pivoting. | Any.Run, PhishTool, CyberChef |
-| **Threat Intelligence** | Categorization of adversary TTPs and IOC enrichment. | MITRE ATT&CK, VirusTotal, OTX |
-| **Digital Forensics** | Recovery of non-volatile storage artifacts and volatile memory analysis. | Autopsy, Volatility 3, KAPE |
-| **SIEM Analysis** | Log aggregation, event correlation, and advanced query formulation. | Splunk (SPL), Elastic (KQL) |
-| **Network Analysis** | Deep Packet Inspection (DPI) to identify lateral movement or C2 beaconing. | Wireshark, `tshark`, Zeek |
-| **Incident Response** | Live endpoint triage methodologies and evidence preservation techniques. | Sysinternals, native OS CLI |
+| Phishing analysis | SMTP header inspection, payload RE, URL pivoting | Any.run, PhishTool, CyberChef |
+| Threat intelligence | TTP categorization, IOC enrichment, adversary mapping | MITRE ATT&CK, VirusTotal, OTX |
+| Digital forensics | Disk & memory artifact analysis | Autopsy, Volatility 3, KAPE |
+| SIEM analysis | Log correlation, SPL/KQL query writing | Splunk, Elastic |
+| Network analysis | DPI, lateral movement detection, C2 identification | Wireshark, tshark, Zeek |
+| Incident response | Live triage, containment, evidence preservation | Sysinternals, native OS CLI |
 
 ---
 
-## License
-MIT
+## Structure
+
+```text
+.
+├── 00_introduction/        # triage methodology
+├── 01_phishing/            # header analysis, attachment extraction
+├── 02_threat_intel/        # IOC management, ATT&CK TTP mapping
+├── 03_forensics/
+│   ├── disk/               # NTFS, registry, file carving
+│   └── memory/             # Volatility profiles, injection detection
+├── 04_siem/                # SPL structures, correlation rules
+├── 05_network/             # BPF filters, PCAP carving
+└── 06_incident_response/   # IR lifecycle, live response
+```
+
+---
+
+> General technical documentation and open-source tool references only. No proprietary exam content, lab infrastructure details, or restricted BTL1 materials — per SBT NDA.
+
+---
+
+MIT License · See `LICENSE`
