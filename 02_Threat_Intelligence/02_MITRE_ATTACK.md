@@ -1,61 +1,84 @@
-# 🗺️ The MITRE ATT&CK® Framework
+# MITRE ATT&CK
 
-The **MITRE ATT&CK®** framework has become the de facto standard for describing and categorizing the behavior of cyber adversaries. It is a **globally accessible knowledge base**, curated by [The MITRE Corporation](https://www.mitre.org/), based on **real-world observations** of cyberattacks.
+ATT&CK is a knowledge base of adversary behavior built from real-world attack observations. It's the standard framework for describing what attackers do and how defenders can detect or mitigate it.
 
-ATT&CK stands for **A**dversarial **T**actics, **T**echniques, and **C**ommon **K**nowledge.
-
-## 🏗️ Framework Structure: The Matrices
-
-ATT&CK organizes adversary behavior into matrices. The most relevant for BTL1 (and most enterprise environments) is the **Enterprise Matrix**, which covers platforms like Windows, macOS, Linux, Networks, Cloud, etc.
-
-The matrix is structured like this:
-
-* **Tactics (Columns):** Represent the **tactical objective** or the reason behind an adversary's action. They are the high-level categories of an attack lifecycle. Key tactics in the Enterprise Matrix include:
-    * `Reconnaissance`
-    * `Resource Development`
-    * `Initial Access`
-    * `Execution`
-    * `Persistence`
-    * `Privilege Escalation`
-    * `Defense Evasion`
-    * `Credential Access`
-    * `Discovery`
-    * `Lateral Movement`
-    * `Collection`
-    * `Command and Control` (C2)
-    * `Exfiltration`
-    * `Impact`
-
-* **Techniques (Cells):** Represent _how_ an adversary achieves a tactical objective. Each technique has a unique ID (e.g., `T1566 Phishing`). They describe a specific action.
-
-* **Sub-techniques (Technique Details):** Represent a more specific way of implementing a technique. They have IDs with a decimal point (e.g., `T1566.001 Spearphishing Attachment`, `T1566.002 Spearphishing Link`). Not all techniques have sub-techniques.
-
-* **Procedures (Examples):** Are the specific implementations of techniques and sub-techniques observed in the real world by threat actor groups (APTs, crime groups) or specific malware. ATT&CK documents these procedures as examples.
-
-## ✅ Why is ATT&CK Useful for Blue Team / BTL1?
-
-> ATT&CK provides immense value for defenders:
-
-1.  **Common Language:** Offers a standard taxonomy to describe attacker actions, facilitating communication and analysis.
-2.  **Incident Contextualization:** Allows mapping the evidence found during an investigation (logs, artifacts) to known `TTPs`, helping to understand what the attacker is doing and what they might do next.
-3.  **Investigation Guide:** When identifying a `TTP`, you can consult ATT&CK to know which artifacts to look for or what other techniques attackers using that `TTP` often employ.
-4.  **Detection Improvement:** Helps design detection rules (e.g., in a SIEM) based on behaviors (`TTPs`) instead of just fragile `IoCs`.
-5.  **Coverage Assessment:** Allows analyzing which `TTPs` your current defenses cover (or don't).
-6.  **CTI Enrichment:** Links `IoCs` with behaviors (`TTPs`) for more robust intelligence.
-
-## 🚀 How to Use ATT&CK in Practice?
-
-* **Official Website:** The main resource is [https://attack.mitre.org/](https://attack.mitre.org/). You can browse the matrices, search for techniques, read detailed descriptions, see procedure examples and references.
-* **`ATT&CK Navigator`:** A web tool ([https://mitre-attack.github.io/attack-navigator/](https://mitre-attack.github.io/attack-navigator/)) to visualize the matrices, create "layers" to annotate, color techniques (e.g., mark those observed in an incident, those you have detections for), compare layers, etc. Very useful for analysis and presentations.
-* **Mapping Evidence to `TTPs` (Mental Process):**
-    1.  **Observe:** You find a suspicious artifact or activity (e.g., a new Windows service created that executes a suspicious script).
-    2.  **Search/Consult ATT&CK:** Search the ATT&CK site for relevant keywords ("Windows service", "persistence", "service creation").
-    3.  **Identify the Technique:** You find `T1543.003 Create or Modify System Process: Windows Service`.
-    4.  **Understand the Context:** The technique's page tells you that it belongs to the `Persistence` and `Privilege Escalation` tactics. It gives details on how it's used, examples, and potential mitigations/detections.
-    5.  **Document:** Note the identified `TTP` in your notes/report to give context to your finding.
-
-## 🎯 Relevance for BTL1
-
-> In the BTL1 exam, although it's not always explicitly required to map every finding to an ATT&CK `TTP`, doing so (when relevant and you are confident in the identification) demonstrates a deeper understanding of the attacker's behavior. It can add **significant value** to your final report by explaining _why_ a specific artifact is important in the context of the broader attack.
+ATT&CK = Adversarial Tactics, Techniques, and Common Knowledge.
 
 ---
+
+## Structure
+
+The Enterprise Matrix (the one relevant for BTL1) is organized into three layers:
+
+**Tactics** — the *why*. The attacker's objective at each phase.
+
+| ID | Tactic |
+| :--- | :--- |
+| TA0001 | Initial Access |
+| TA0002 | Execution |
+| TA0003 | Persistence |
+| TA0004 | Privilege Escalation |
+| TA0005 | Defense Evasion |
+| TA0006 | Credential Access |
+| TA0007 | Discovery |
+| TA0008 | Lateral Movement |
+| TA0009 | Collection |
+| TA0011 | Command and Control |
+| TA0010 | Exfiltration |
+| TA0040 | Impact |
+
+**Techniques** — the *how*. A specific method to achieve a tactic. Each has a unique ID.
+- Example: `T1566` — Phishing (Initial Access)
+- Example: `T1059` — Command and Scripting Interpreter (Execution)
+
+**Sub-techniques** — a more specific variation of a technique.
+- Example: `T1566.001` — Spearphishing Attachment
+- Example: `T1566.002` — Spearphishing Link
+- Example: `T1059.001` — PowerShell
+
+**Procedures** — the real-world implementation. How a specific actor or malware sample used a technique, with references to public reporting.
+
+---
+
+## How to use ATT&CK during an investigation
+
+The process is observation → lookup → context → documentation.
+
+**Example — you find a suspicious scheduled task:**
+```
+1. Observe: A new scheduled task runs a PowerShell command at startup
+2. Search ATT&CK: "scheduled task persistence windows"
+3. Find: T1053.005 — Scheduled Task/Job: Scheduled Task
+   Tactics: Persistence, Privilege Escalation
+4. Read the page: understand how attackers use it, what artifacts it leaves
+5. Document: "Evidence of T1053.005 — task name X runs Y command at Z time"
+```
+
+**Example — phishing email with malicious attachment:**
+```
+T1566.001 — Spearphishing Attachment (Initial Access)
+T1204.002 — User Execution: Malicious File (Execution)
+T1059.001 — PowerShell (Execution) — if macro drops PS script
+T1547.001 — Registry Run Keys (Persistence) — if malware adds persistence
+```
+
+---
+
+## ATT&CK Navigator
+
+The Navigator lets you create layers on the matrix — color coding techniques you've observed, techniques you have detections for, or techniques associated with a specific actor group.
+
+Useful for:
+- Visualizing what TTPs appeared in an incident
+- Comparing your detection coverage against an actor group's known TTPs
+- Building investigation checklists for common attack patterns
+
+→ [mitre-attack.github.io/attack-navigator](https://mitre-attack.github.io/attack-navigator/)
+
+---
+
+## In the BTL1 context
+
+Mapping findings to ATT&CK is not always explicitly required, but doing it when you're confident in the identification strengthens your report. It shows you understand not just *what* happened but *why* that artifact is significant in the context of the attack.
+
+Keep it honest — only map what you can actually support with evidence.
