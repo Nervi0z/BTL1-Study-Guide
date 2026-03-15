@@ -1,44 +1,57 @@
-# 🔥 Incident Response (IR)
+# Incident Response
 
-> **Incident Response (IR)** is the organized and structured approach an organization follows to manage the aftermath of a security breach or cyberattack. The main objective is to **limit damage**, **reduce recovery time and costs**, and **learn from the incident** to improve future security posture.
-
-A security incident can be any event that compromises the confidentiality, integrity, or availability of information systems or data.
-
-## 📄 Importance of Incident Response
-
-An effective IR plan and capability are crucial for:
-
-* **Minimizing Impact:** Quickly containing the breach to prevent it from spreading and causing more damage.
-* **Restoring Operations:** Recovering affected systems and services quickly and safely.
-* **Meeting Requirements:** Satisfying legal, regulatory, or contractual obligations for breach notification and management.
-* **Protecting Reputation:** Managing communication and the crisis to maintain the trust of customers and stakeholders.
-* **Continuous Improvement:** Learning from each incident to strengthen defenses and prevent similar future attacks.
-
-## 🎯 Relationship with BTL1
-
-> BTL1 exam scenarios typically simulate the initial phases of an incident response process, primarily **Identification** and **Analysis**. You are presented with a situation (SIEM alert, reported phishing email, detected strange behavior) and you must use your analysis skills (forensics, logs, network) to investigate:
-> * What happened?
-> * Which systems are affected?
-> * What is the initial scope?
-> * What actions did the attacker take?
-> * Are there indicators of compromise (`IoCs`)?
-
-Although in BTL1 you generally won't perform real-time containment or eradication actions on the exam systems, you _will_ apply investigation techniques characteristic of IR. The **Live Response** commands we will see in this section are a fundamental part of the initial collection of volatile data during a real incident response. Understanding the complete IR lifecycle will give context to your analysis.
-
-## 📂 Structure of this Section
-
-In this section, we will cover:
-
-1.  **[The Incident Response Lifecycle](./01_IR_Lifecycle.md):** Standard models like `PICERL` or `NIST IR`.
-2.  **[Live Response on Windows](./02_Live_Response_Windows.md):** Commands for collecting initial volatile information on Windows systems.
-3.  **[Live Response on Linux](./03_Live_Response_Linux.md):** Equivalent commands for Linux systems.
-4.  **[Containment and Eradication (Concepts)](./04_Containment_Eradication.md):** Basic strategies (though not directly applied in BTL1).
-5.  **[Resources and Practice](./05_Practice_Resources.md):** Where to practice `IR` scenarios.
+IR is what ties everything else together — phishing analysis identifies the initial access vector, forensics shows what the attacker did, SIEM and network analysis fill in the timeline, and IR is the process of managing the response: confirming scope, containing the threat, removing persistence, and recovering safely.
 
 ---
 
-> _Incident response integrates many of the skills seen in previous sections (forensics, logs, network, CTI) into a structured process for managing security crises._
->
+## What's in this section
+
+| File | What it covers |
+| :--- | :--- |
+| [01_IR_Lifecycle.md](01_IR_Lifecycle.md) | Six phases, what BTL1 tests at each, common failure modes |
+| [02_Live_Response_Windows.md](02_Live_Response_Windows.md) | Full PowerShell/CMD command reference for Windows triage |
+| [03_Live_Response_Linux.md](03_Live_Response_Linux.md) | Full command reference for Linux triage |
+| [04_Containment_Eradication.md](04_Containment_Eradication.md) | Network isolation, account lockout, persistence removal, verification |
+| [05_Practice_Resources.md](05_Practice_Resources.md) | IR lab platforms, tabletop resources, NIST/SANS frameworks |
 
 ---
 
+## Quick reference
+
+**Windows live response — run in order:**
+```powershell
+# processes with full paths
+Get-Process | Select-Object Name, Id, Path, StartTime | Sort-Object StartTime -Descending
+
+# network connections with PIDs
+netstat -ano
+
+# map PID to process name
+Get-NetTCPConnection | Select-Object LocalAddress,LocalPort,RemoteAddress,RemotePort,State,
+  @{n='Process';e={(Get-Process -Id $_.OwningProcess).Name}} | Sort-Object State
+
+# scheduled tasks
+Get-ScheduledTask | Where-Object {$_.State -ne "Disabled"} | Select-Object TaskName,TaskPath,State
+
+# services
+Get-Service | Where-Object {$_.Status -eq "Running"} | Select-Object Name,DisplayName,Status
+```
+
+**Linux live response — run in order:**
+```bash
+# running processes
+ps aux --sort=-%mem | head 20
+
+# network connections
+ss -tulnp
+
+# recently modified files
+find / -type f -mtime -1 -not -path '/proc/*' -not -path '/sys/*' 2>/dev/null | head 30
+
+# cron jobs all users
+for user in $(cut -d: -f1 /etc/passwd); do echo "==$user=="; crontab -l -u $user 2>/dev/null; done
+```
+
+---
+
+> Use `02_Live_Response_Windows.md` and `03_Live_Response_Linux.md` as command lookups during active triage. Start with `01_IR_Lifecycle.md` to understand the full process.

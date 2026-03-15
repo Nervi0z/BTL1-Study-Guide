@@ -1,60 +1,42 @@
-# 📚 Resources and Practice for Incident Response (IR)
-
-> Incident Response is where all the pieces of defensive analysis (forensics, logs, network, CTI) come together. Practicing with complete scenarios is the best way to develop the necessary intuition and efficiency.
-
-## 💻 Platforms with IR Scenarios
-
-These platforms offer challenges and labs that simulate security incidents from start to finish or key phases of the response:
-
-* **[CyberDefenders](https://cyberdefenders.org/)**:
-    * **Highly Recommended.** Many of their challenges are complete `DFIR` scenarios where you are given logs, memory dumps, disk images, network traffic, etc., and must investigate a complete incident.
-
-* **[Blue Team Labs Online (BTLO)](https://blueteamlabs.online/)**:
-    * Especially their "Investigation" scenarios, which are longer and more complex than the daily "Challenges". They usually require multiple types of analysis to solve the case.
-
-* **[TryHackMe](https://tryhackme.com/)**:
-    * Look for learning paths like "Cyber Defense" or specific rooms tagged with "Incident Response", "`DFIR`", "Threat Hunting".
-
-* **[Hack The Box - Sherlocks](https://app.hackthebox.com/sherlocks)**:
-    * Specific `DFIR`/Blue Team challenges simulating complex investigations.
-
-* **[RangeForce](https://www.rangeforce.com/) / [Immersive Labs](https://www.immersivelabs.com/) (Mention - Commercial):**
-    * These are enterprise training platforms offering highly realistic `IR` simulations, often used by organizations to train their `SOC`/`CSIRT` teams. Less accessible for free individual practice.
-
-* **Annual Events (SANS):**
-    * **SANS NetWars:** CTF-style competition with many `IR` components.
-    * **SANS Holiday Hack Challenge:** Free annual event around Christmas, often with excellent forensic and `IR` challenges. Materials sometimes remain available afterward.
-
-## 📖 Fundamental Guides and Methodologies
-
-> Understanding standard frameworks is important:
-
-* **[NIST SP 800-61 Rev. 2: Computer Security Incident Handling Guide](https://csrc.nist.gov/publications/detail/sp/800-61/rev-2/final)**:
-    * The NIST reference guide for incident handling. Fundamental reading.
-
-* **[SANS DFIR Resources](https://www.sans.org/digital-forensics-incident-response/)**:
-    * SANS offers free posters, cheatsheets, whitepapers, and webcasts on `IR` and forensics in their "Reading Room" and blog.
-
-* **Books:** Look for titles on "Incident Response", "Incident Handling", "Applied Incident Response" to delve deeper into methodologies.
-
-## 📰 Blogs and Real Incident Write-ups
-
-> Learning from real cases (even if anonymized) is invaluable:
-
-* **Vendor Incident Response Reports:** Search the blogs and resource sections of companies like Mandiant (Google Cloud), CrowdStrike, Kroll, Sophos, Secureworks, etc. They often publish detailed analyses of campaigns and observed `TTPs`.
-* **`CSIRT`/`CERT` Team Blogs:** Some teams publish analyses or lessons learned.
-* **CTF Write-ups:** Read how others solved `IR` challenges on platforms like **CyberDefenders** after they conclude.
-
-## 🛠️ Tools (Integration)
-
-> Remember that `IR` practice involves **jointly** using all the tools and techniques seen in previous sections:
-
-* **`SIEM`** (`Splunk`, `Elastic`...) for log analysis.
-* **Forensic Tools** (`Autopsy`, `Volatility`, EZ Tools, `TSK`...) for disk and memory.
-* **Network Analyzers** (`Wireshark`, `tshark`...) for `PCAPs`.
-* **Live Response Commands** (Windows and Linux).
-* **CTI Tools** (`VirusTotal`, `OTX`...) for enriching `IoCs`.
+# Practice Resources — Incident Response
 
 ---
 
-> _`IR` scenarios force you to think like a detective, correlating clues from multiple sources to solve the complete puzzle of the attack._
+## IR-focused lab platforms
+
+| Platform | What it offers |
+| :--- | :--- |
+| [Blue Team Labs Online](https://blueteamlabs.online/) | Investigation scenarios that walk through full IR cases — phishing to forensics to containment. The closest free equivalent to the BTL1 lab format. |
+| [CyberDefenders](https://cyberdefenders.org/) | Multi-stage IR challenges with realistic evidence packages. "Endpoint Forensics" and "Network Forensics" tags are most relevant. |
+| [LetsDefend](https://letsdefend.io/) | Simulated SOC environment with alert triaging and incident management workflow. |
+| [TryHackMe](https://tryhackme.com/) | IR-specific learning paths and rooms — Incident Response, Windows Forensics, Linux forensics. |
+| [Hack The Box — Sherlocks](https://app.hackthebox.com/sherlocks) | DFIR and IR challenges focused on evidence analysis. Higher difficulty than BTLO/CyberDefenders. |
+
+---
+
+## Tabletop and scenario resources
+
+Tabletop exercises walk through IR scenarios in discussion format — useful for building decision-making instincts without needing a full lab environment.
+
+- **[CISA Tabletop Exercise Packages (CTEPs)](https://www.cisa.gov/resources-tools/services/cisa-tabletop-exercise-packages)** — Free scenario packages for ransomware, insider threat, and supply chain attacks. Download the exercise guide and work through the scenario.
+- **[MITRE ATT&CK Evaluations](https://attackevals.mitre-engenuity.org/)** — Published results of detection evaluations against known adversary TTPs. Useful for understanding what an attack chain looks like end-to-end.
+- **[The DFIR Report](https://thedfirreport.com/)** — Real intrusion case studies from initial access through post-exploitation. Read these as tabletop scenarios — try to answer "what would I look for next?" before reading the next section.
+
+---
+
+## IR frameworks and documentation
+
+| Resource | What it covers |
+| :--- | :--- |
+| [NIST SP 800-61r2](https://csrc.nist.gov/publications/detail/sp/800-61/rev-2/final) | NIST's Computer Security Incident Handling Guide — the reference framework for IR lifecycle and documentation. Free PDF. |
+| [SANS Incident Handler's Handbook](https://www.sans.org/white-papers/33901/) | Practical incident handling guide from SANS. More operational than NIST, more narrative. Free with registration. |
+| [CISA IR Playbooks](https://www.cisa.gov/sites/default/files/publications/Federal_Government_Cybersecurity_Incident_and_Vulnerability_Response_Playbooks_508C.pdf) | Federal incident response playbooks — ransomware and vulnerability response. Concrete decision trees. |
+| [MITRE D3FEND](https://d3fend.mitre.org/) | Defensive techniques mapped to ATT&CK. Useful for identifying containment and eradication actions tied to specific techniques. |
+
+---
+
+## Live response tool documentation
+
+- **[Sysinternals Suite](https://docs.microsoft.com/en-us/sysinternals/)** — Autoruns, Process Explorer, TCPView, ProcMon, and others. Each tool has documentation on Microsoft's site. Autoruns is the most important for persistence hunting.
+- **[LiME (Linux Memory Extractor)](https://github.com/504ensicsLabs/LiME)** — GitHub repository with build instructions and usage examples for Linux memory acquisition.
+- **[GRR Rapid Response](https://github.com/google/grr)** — Google's open-source remote live response framework. Worth understanding at a conceptual level even if you don't deploy it.
