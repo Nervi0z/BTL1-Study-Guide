@@ -1,1 +1,30 @@
+name: "Error or broken content"
+description: "Command doesn't work, syntax is wrong, or something is inaccurate"
+title: "[fix] "
+labels: ["fix"]
+body:
+  - type: input
+    id: file
+    attributes:
+      label: File
+      description: Which file has the issue?
+      placeholder: "04_SIEM_Analysis/03_Common_Searches.md"
+    validations:
+      required: true
 
+  - type: textarea
+    id: what
+    attributes:
+      label: What's wrong
+      description: Describe the error — wrong syntax, incorrect output, outdated tool reference, etc.
+    validations:
+      required: true
+
+  - type: textarea
+    id: fix
+    attributes:
+      label: Correct version (if you know it)
+      description: If you know the right syntax or content, paste it here
+      render: bash
+    validations:
+      required: false

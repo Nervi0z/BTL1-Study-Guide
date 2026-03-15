@@ -1,0 +1,45 @@
+name: "New content suggestion"
+description: "A missing detection pattern, artifact location, command, or resource worth adding"
+title: "[add] "
+labels: ["enhancement"]
+body:
+  - type: dropdown
+    id: section
+    attributes:
+      label: Section
+      options:
+        - "01 Phishing Analysis"
+        - "02 Threat Intelligence"
+        - "03 Digital Forensics"
+        - "04 SIEM Analysis"
+        - "05 Network Analysis"
+        - "06 Incident Response"
+        - "00 Introduction"
+        - "Other / New file"
+    validations:
+      required: true
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What should be added
+      description: Describe the content — a specific command, query, filter, artifact location, tool reference, or resource
+    validations:
+      required: true
+
+  - type: textarea
+    id: content
+    attributes:
+      label: Draft content (optional)
+      description: If you have working syntax or a draft, paste it here — it speeds up review significantly
+      render: bash
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: nda
+    attributes:
+      label: NDA compliance
+      options:
+        - label: "This content does not include BTL1 exam questions, lab details, or NDA-restricted material"
+          required: true

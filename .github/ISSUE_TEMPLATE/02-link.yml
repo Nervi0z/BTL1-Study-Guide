@@ -1,0 +1,29 @@
+name: "Broken or outdated link"
+description: "An external link is dead, moved, or pointing to the wrong place"
+title: "[link] "
+labels: ["link-rot"]
+body:
+  - type: input
+    id: file
+    attributes:
+      label: File
+      description: Which file contains the broken link?
+      placeholder: "02_Threat_Intelligence/03_Tools.md"
+    validations:
+      required: true
+
+  - type: input
+    id: broken
+    attributes:
+      label: Broken URL
+      placeholder: "https://..."
+    validations:
+      required: true
+
+  - type: input
+    id: replacement
+    attributes:
+      label: Replacement URL (if known)
+      placeholder: "https://..."
+    validations:
+      required: false
