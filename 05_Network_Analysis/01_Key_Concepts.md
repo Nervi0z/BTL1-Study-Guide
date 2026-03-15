@@ -1,61 +1,71 @@
-# 🌐 Network Analysis: Key Concepts
-
-> **Network Forensics Analysis** or **Network Traffic Analysis (NTA)** focuses on monitoring, capturing, storing, and analyzing network communications to detect and/or investigate security incidents, intrusions, malware activity, policy violations, and other relevant events.
-
-While disk and memory analysis look at what happens _inside_ a system, network analysis examines _how_ systems communicate with each other and _what_ information they exchange.
-
-## 📦 PCAP: The Fundamental Evidence
-
-> * **What is it?:** A **PCAP (Packet Capture)** file (`.pcap` or the more modern `.pcapng` format) is the de facto standard for saving captured data packets from a network. It contains a copy of the headers and, usually, the content (payload) of the packets that were traveling over the wire (or air) at a given time.
-
-* **Capture:** Tools like `tcpdump` (Linux CLI), `Wireshark` (GUI Win/Lin/Mac), or `tshark` (Wireshark's CLI) are used to capture live traffic and save it in PCAP format.
-* **Analysis:** Tools like `Wireshark`, `tshark`, `Zeek` (formerly Bro), `Suricata`, `NetworkMiner` are used to read and analyze PCAP files.
-* **In BTL1:** You will very likely be provided with relevant PCAP files for the incident scenario, and you will need to analyze them to find answers.
-
-## 📶 OSI / TCP/IP Model (Quick Review for Analysis)
-
-> Understanding the network layers helps know where to look for what information:
-
-* **Layer 2 (Link - e.g., Ethernet):** Provides physical **MAC** addresses. Useful for identifying specific devices on a local network.
-* **Layer 3 (Network - e.g., IP):** Logical **IP** addresses (`IPv4`/`IPv6`). Fundamental for knowing the source and destination of communications between networks.
-* **Layer 4 (Transport - e.g., TCP, UDP):** Manages end-to-end communication.
-    * **`TCP`:** Connection-oriented (`SYN`, `ACK`, `FIN`), reliable, uses **ports** to identify applications/services. Key for stream analysis.
-    * **`UDP`:** Connectionless, fast, less reliable, also uses **ports**. Common for `DNS`, `DHCP`, streaming.
-    * **Ports:** Indicate the service/application (e.g., `80`=HTTP, `443`=HTTPS, `53`=DNS, `22`=SSH). Unexpected ports can be suspicious.
-* **Layer 7 (Application):** The protocols applications actually use to exchange data (`HTTP`, `DNS`, `SMB`, `SMTP`, `FTP`, etc.). The actual **content** of the communication resides here (if not encrypted).
-
-## 👀 What Do We Look For in Network Traffic?
-
-The objectives of network traffic analysis in a security context typically include:
-
-1.  **Known Malicious Communications:**
-    * Connections to/from IPs, domains, or URLs marked as malicious (malware `C2`, phishing sites, etc. - requires CTI).
-2.  **Malware Activity:**
-    * Command and Control (`C2`) Beacons: Regular, periodic connections to an external server.
-    * Payload Downloads: `HTTP`/`FTP`/etc. traffic downloading executables, scripts.
-    * Propagation Activity: Port scanning (`TCP SYN scans`), connection attempts to other internal systems (`SMB`, `RDP`).
-3.  **Data Exfiltration:**
-    * Unusual large outbound data transfers.
-    * Use of non-standard or 'covert' protocols to exfiltrate data (`DNS tunneling`, `ICMP tunneling`).
-4.  **Policy Violations:**
-    * Use of disallowed protocols (`P2P`, `Tor`).
-    * Access to prohibited websites/categories.
-5.  **Anomalies and Suspicious Behaviors:**
-    * Protocols on incorrect ports (e.g., `SSH` over port `80`).
-    * Unusual traffic patterns (spikes, strange long-duration connections).
-    * Excessive connection errors (`TCP Resets`).
-    * Use of insecure protocols (`Telnet`, plaintext `FTP` for credentials).
-
-## 🔒 Metadata vs. Full Content and Encryption
-
-* **Full Packet Capture (PCAP):** Captures the entire packet, including the payload. Allows seeing the exact content of communications **if they are not encrypted**.
-* **Metadata (NetFlow, Zeek/Bro Logs):** Summarize communications (IPs, ports, duration, bytes transferred) but **do not include the payload**. Useful for high-level analysis and pattern detection, but limited for seeing exact content.
-* **Encryption (TLS/SSL):** Much of the web traffic and many other communications are encrypted today. This means that even if you capture the full PCAP, you **cannot read the application content** (e.g., the exact `HTTPS` webpage, `SSH` commands). However, you **can still see important metadata**: IPs, ports, duration, data volume, and sometimes certificate information or the `SNI` (Server Name Indication) in TLS, which can reveal the destination domain.
-
-## 🎯 BTL1 Focus
-
-> In BTL1, network analysis generally involves working with **PCAP files** using tools like **`Wireshark`** or **`tshark`**. You will need to know how to apply filters, follow conversations (`TCP`/`UDP Streams`), identify protocols, and extract relevant information (files, plaintext credentials if any) to answer questions about the communications associated with an incident.
+# Network Analysis — Key Concepts
 
 ---
 
-> _Understanding these concepts prepares you to effectively use analysis tools and extract the maximum possible information from network traffic._
+## What PCAPs are and how you get them
+
+A PCAP (Packet Capture) file contains a timestamped record of every packet that passed through a network interface during the capture window. Unlike logs, which record what the OS decided was worth logging, a PCAP records everything — headers, payloads, connection setup, teardown, and retransmissions.
+
+In BTL1, PCAPs are provided as evidence files. In a real SOC, they come from: network taps on segment boundaries, SPAN ports on managed switches, inline capture devices (like Security Onion sensors), or endpoint-based capture tools like Wireshark or `tcpdump`.
+
+A PCAP without a timeframe context is harder to work with. Know when the incident occurred before you open the file — use the Statistics → Capture File Properties menu in Wireshark to see the PCAP's time window, then narrow your filter to the relevant period.
+
+---
+
+## Protocol stack — what you're analyzing at each layer
+
+| Layer | Protocols | What you analyze |
+| :--- | :--- | :--- |
+| Layer 3 (Network) | IP, ICMP | Source/destination IPs, ICMP type codes, TTL values |
+| Layer 4 (Transport) | TCP, UDP | Ports, connection state (SYN/ACK/RST), session reconstruction |
+| Layer 7 (Application) | DNS, HTTP, SMB, FTP, TLS | Protocol-specific content — queries, requests, credentials, filenames |
+
+Most investigation work happens at Layer 7. But Layer 4 is where you see port scans, lateral movement patterns, and C2 connection timing. Layer 3 is where you identify which hosts are communicating.
+
+---
+
+## DNS — normal vs suspicious
+
+Normal DNS: short hostnames, known TLDs (.com, .net, .org, .io), TTL values consistent with the record type, responses pointing to expected IPs.
+
+Suspicious DNS patterns:
+- **High-entropy hostnames**: `a3f9b2c1d8e7.evil.com` — random-looking subdomains are characteristic of DGA (Domain Generation Algorithm) malware
+- **Abnormally long query names**: legitimate domains rarely exceed 50 characters; DNS tunneling tools encode data in subdomains and produce very long names
+- **High query volume to a single domain**: a host querying the same domain hundreds of times per hour suggests C2 keepalive or tunneling
+- **Unusual TLDs**: `.tk`, `.xyz`, `.top`, `.pw`, `.cc` are heavily abused; their presence isn't conclusive but warrants a lookup
+- **NXDOMAIN floods**: many consecutive failed lookups suggest DGA — the malware is cycling through generated domains looking for one that's registered
+
+---
+
+## HTTP — normal vs suspicious
+
+HTTP is cleartext and fully inspectable in a PCAP. Inspect:
+- **Request method**: GET retrieves, POST sends data. Large POST bodies with no corresponding user action are exfiltration candidates
+- **User agent**: legitimate browsers send consistent, recognizable user agents. `python-requests/2.28`, `curl/7.68`, or empty user agents in browser traffic are anomalous
+- **URI patterns**: `/gate.php`, `/panel/`, `/upload/`, `/update/` are common C2 endpoint names
+- **Response codes**: 200 is success, 404 is not found — C2 infrastructure often returns 404 for anything except the configured endpoint
+
+HTTPS: you can't see the content without the private key or a MITM proxy, but you can see: the server's certificate (CN, SAN, issuer), SNI (Server Name Indication) showing what hostname the client expected, and JA3/JA3S fingerprints of the TLS handshake.
+
+---
+
+## SMB — normal vs suspicious
+
+SMB is used for Windows file sharing and is the primary protocol for lateral movement in Windows environments.
+
+Normal SMB: hosts accessing mapped network drives, print spooling, domain controller SYSVOL/NETLOGON access.
+
+Suspicious SMB patterns:
+- Connections from non-server hosts to other workstations (workstation-to-workstation SMB is unusual in most environments)
+- Access to ADMIN$, C$, or IPC$ shares from unusual sources — these are administrative shares used by tools like PsExec and impacket
+- SMB authentication using NTLM instead of Kerberos on a domain (potential pass-the-hash)
+- File access to `.exe`, `.ps1`, or `.dll` files via SMB (lateral tool transfer)
+
+---
+
+## FTP — cleartext risk
+
+FTP sends credentials and data in cleartext. If you see FTP in a PCAP:
+- Filter for the control channel (port 21) and look for `USER` and `PASS` commands — both are visible as plaintext
+- The data channel (port 20, or negotiated in passive mode) carries the actual file transfer — follow the TCP stream to see file content
+- Exfiltration via FTP is unsophisticated but still occurs; look for unusual file sizes or transfer destinations

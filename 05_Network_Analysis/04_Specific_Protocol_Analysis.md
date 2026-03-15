@@ -1,72 +1,110 @@
-# 🔬 Specific Protocol Analysis (HTTP, DNS, SMB)
-
-> Besides filtering for the presence of a protocol, it's crucial to understand what to look for _within_ those protocols to identify malicious activity. Here we focus on `HTTP`, `DNS`, and `SMB`/`SMB2`.
-
-## 🌐 HTTP / HTTPS (Web Traffic)
-
-* **Forensic Value:** The base protocol of the web. Used for Browse, file downloads, APIs, and frequently by malware for `C2` and payload downloads.
-* **Key Fields to Examine:**
-    * **Request:**
-        * `http.request.method`: `GET` (request resource), `POST` (send data), `HEAD`, etc.
-        * `http.request.uri`: The specific path requested on the server (e.g., `/download/payload.exe`).
-        * `http.host`: The domain name the request is directed to.
-        * `http.user_agent`: Identifies the browser or client making the request (malware often uses custom or generic UAs).
-        * `http.referer`: Previous page from which the request originated (if applicable).
-        * `http.cookie`: Cookies sent to the server.
-    * **Response:**
-        * `http.response.code`: Status code (e.g., `200` OK, `301`/`302` Redirect, `404` Not Found, `500` Server Error).
-        * `http.content_type`: Type of content returned (e.g., `text/html`, `application/json`, `application/octet-stream` for binary downloads).
-        * `http.server`: Information about the web server software.
-        * `http.set_cookie`: Cookies the server asks the client to save.
-* **What to Look For (Warning Signs):**
-    * `GET` requests downloading executable files (`.exe`, `.dll`), scripts (`.ps1`, `.js`, `.vbs`), or suspicious compressed files (`.zip`, `.rar`, `.iso`).
-    * `POST` requests sending data to unknown or suspicious URLs/domains (could be data exfiltration or `C2` check-in). Analyze the sent data if not encrypted.
-    * Unusual, generic `User-Agents` (e.g., `curl`, `wget` in unexpected contexts) or those trying to mimic legitimate browsers but containing errors.
-    * `C2` **beaconing patterns**: Regular, periodic `GET` or `POST` requests to the same URL/domain.
-    * Redirects (`301`/`302`) leading to malicious sites.
-    * Massive `404` errors can indicate web directory scanning.
-* **HTTPS:** Remember the content (payload) is encrypted. However, you can still see: IPs, ports, data volume, duration, and often the destination domain name via the **SNI (Server Name Indication)** extension in the TLS handshake (filter: `tls.handshake.extensions_server_name`).
-* **Tools:** `Wireshark` (`Follow > HTTP Stream`, `Export Objects > HTTP`), `tshark` (`-e http...`).
+# Protocol Analysis
 
 ---
 
-## ❓ DNS (Domain Name System)
+## DNS
 
-* **Forensic Value:** Translates human-readable domain names (e.g., `www.google.com`) to IP addresses. It's fundamental for almost all internet communication and is **frequently abused** by malware for `C2`, `DGA`, and tunneling.
-* **Key Fields to Examine:**
-    * `dns.qry.name`: The domain name being queried.
-    * `dns.qry.type`: The requested record type (`1`=A (IPv4), `28`=AAAA (IPv6), `5`=CNAME, `15`=MX (Mail), `16`=TXT, `6`=SOA).
-    * `dns.resp.name`, `dns.resp.addr`, `dns.resp.ttl`: Name, IP address, and Time-To-Live in the response.
-    * `dns.flags.rcode`: Response code (`0`=No Error, `3`=NXDomain - Non-Existent Domain).
-* **What to Look For (Warning Signs):**
-    * Queries to known malicious or suspicious domains (CTI lists).
-    * **High Volume of `NXDomain`:** Many queries for non-existent domains can indicate **`DGA` (Domain Generation Algorithms)** activity, where malware generates many domains hoping one is active for `C2`.
-    * Queries for very long or random-looking domains (possible `DGA`).
-    * Queries for unusual record types (especially `TXT`) that could be used for `C2` or exfiltration (**DNS Tunneling**).
-    * **Fast Flux** patterns: A domain resolving to multiple different IPs in short periods.
-    * Use of non-standard or suspicious DNS servers.
-* **Tools:** `Wireshark` (`dns` filters), `tshark` (`-e dns...`), Passive DNS services.
+DNS is the first place to look in most network-based investigations. Every domain name a host resolves leaves a query in the PCAP — and malware has to resolve its C2 domain before it can talk to it.
 
----
+**What normal DNS looks like**: short hostname queries (20-30 chars), standard record types (A, AAAA, MX, TXT), reasonable response times (< 100ms for cached records), responses pointing to expected IP ranges for the domain.
 
-## 💻 SMB / SMB2 (Server Message Block)
+**DGA (Domain Generation Algorithm) indicators**:
+```
+Wireshark filter: dns.qry.name.len > 40 && dns.flags.response == 1 && dns.count.answers == 0
+```
+DGA malware generates hundreds of pseudo-random domain names and queries them until one resolves — the one the attacker has registered that day. In a PCAP, DGA looks like: repeated NXDOMAIN responses, short hostname strings with high entropy (lots of consonants, no recognizable words), all to the same nameserver.
 
-* **Forensic Value:** Primary Windows protocol for file sharing, printing, and inter-process communication on a local network. It's legitimate but **heavily abused by attackers** for lateral movement, remote file access, remote execution, and internal exfiltration.
-* **Key Fields to Examine:**
-    * `smb2.cmd` or `smb.cmd`: The executed SMB command (e.g., `CREATE` (Open/Create), `READ`, `WRITE`, `CLOSE`, `TREE_CONNECT` (Connect to share), `IOCTL`).
-    * `smb2.filename` or `smb.file`: Name of the file or directory being accessed.
-    * `smb2.tree` or `smb.share`: Name of the share being connected to (e.g., `\\SERVER\IPC$`, `\\SERVER\C$`, `\\SERVER\Share`).
-    * `smb2.user` or `smb.user`: Username performing the action (if session is authenticated).
-    * `smb2.status` or `smb.nt_status`: Status code of the operation (e.g., `STATUS_SUCCESS`, `STATUS_LOGON_FAILURE`, `STATUS_ACCESS_DENIED`).
-* **What to Look For (Warning Signs):**
-    * Connections to administrative shares (`IPC$`, `ADMIN$`, `C$`, etc.) between workstations or from unexpected servers (possible lateral movement).
-    * Repeated failed authentications (`STATUS_LOGON_FAILURE`) to shares.
-    * Access to or modification of sensitive files (e.g., `sam`, `system`, `ntds.dit`, logon scripts).
-    * Transfer of executable files (`.exe`, `.dll`, `.ps1`) between machines.
-    * Use of remote execution tools like `PsExec` (often leaves traces like connections to `IPC$` and creation/execution of a service named `PSEXESVC` on the target, though names can change).
-    * Suspicious `IOCTL` commands, sometimes used for enumeration or exploitation.
-* **Tools:** `Wireshark` (`smb` or `smb2` filters), `tshark` (`-e smb...`), `NetworkMiner` (can extract files transferred via SMB).
+**DNS tunneling indicators**:
+```
+Wireshark filter: dns.qry.type == 16    ← TXT records
+                  dns.qry.name.len > 60
+```
+DNS tunneling encodes data into DNS queries and responses — data exfiltration via DNS, or C2 communication using DNS as the transport. Indicators: unusually long subdomains (`aGVsbG8gd29ybGQ=.evil.com`), TXT record queries from workstations, high query volume to a single parent domain, base64 or hex-encoded looking subdomains.
+
+```bash
+# extract all unique DNS queries and sort by length
+tshark -r capture.pcap -Y "dns.flags.response == 0" \
+  -T fields -e dns.qry.name | sort -u | awk '{ print length, $0 }' | sort -rn | head 20
+```
 
 ---
 
-> _Analyzing the content and patterns within these key protocols often reveals the exact nature of malicious activity that a simple IP and port analysis might miss._
+## HTTP and HTTPS
+
+**HTTP** is fully readable in a PCAP. Focus on:
+- **Follow TCP Stream** (right-click a packet → Follow → TCP Stream) to read the full HTTP exchange
+- POST body — what data is being sent? Is it base64, encoded, structured (JSON, form data)?
+- Response content — what did the server return? An executable? An HTML redirect?
+
+```bash
+# extract HTTP objects (files transferred over HTTP)
+tshark -r capture.pcap --export-objects http,./extracted/
+
+# read all HTTP headers
+tshark -r capture.pcap -Y http -T fields \
+  -e http.request.method -e http.host -e http.request.uri \
+  -e http.user_agent -e http.response.code | column -t
+```
+
+**HTTPS** — you can't read the content without the session key or private key, but you can see:
+
+- **SNI (Server Name Indication)**: The hostname the client is connecting to, sent in the ClientHello before encryption starts. Use `ssl.handshake.extensions_server_name` in Wireshark.
+- **Certificate fields**: Subject CN, SAN (Subject Alternative Names), Issuer, validity dates. Self-signed certs on non-standard ports for non-browser traffic are suspicious.
+- **JA3 fingerprint**: A hash of TLS parameters from the ClientHello. The same malware family often produces the same JA3 across different C2 IPs. Look up JA3 hashes at [ja3er.com](https://ja3er.com/).
+
+```
+Wireshark filter for TLS certificate inspection:
+tls.handshake.certificate   ← select a certificate record, expand in detail panel
+```
+
+---
+
+## SMB
+
+SMB is the Windows file sharing protocol — and the primary tool for lateral movement in Windows environments.
+
+**Authentication**: Modern Windows environments use Kerberos for SMB authentication. Seeing NTLM authentication (look for `ntlmssp` in Wireshark) on a domain-joined network is suspicious — it can indicate pass-the-hash or hash relay attacks.
+
+**Useful SMB filters**:
+```
+smb2                                        ← all SMBv2 traffic
+smb2.cmd == 0x05                            ← file create/open operations
+smb2.filename                               ← filter to packets with a filename field
+smb2.filename contains "ADMIN$"            ← ADMIN$ share access
+smb2.filename contains "C$"               ← C$ administrative share
+ntlmssp && smb2                            ← NTLM auth in SMB sessions
+```
+
+**Lateral tool transfer**: An attacker using PsExec or impacket's smbexec copies an executable to ADMIN$ or a temp location via SMB, then creates a service to run it. In a PCAP, this looks like:
+1. NTLM authentication to a target host
+2. SMB2 Create request to `\ADMIN$\filename.exe` or `\C$\Windows\Temp\`
+3. SMB2 Write — the binary being transferred
+4. Follow-on service creation (may appear in Windows Event logs)
+
+```bash
+# extract files transferred over SMB
+tshark -r capture.pcap --export-objects smb,./smb_objects/
+```
+
+---
+
+## FTP
+
+FTP sends credentials and file content in cleartext over separate control (port 21) and data (port 20 or negotiated passive port) channels.
+
+**Credentials are visible in plaintext**:
+```
+Wireshark filter: ftp.request.command == "USER" || ftp.request.command == "PASS"
+```
+
+In the Wireshark packet list, FTP control commands show in the Info column. Follow the TCP stream on the control channel to see the full session including filenames.
+
+**Data channel**: In passive FTP, the data channel uses a dynamically negotiated port. Wireshark usually reassociates these automatically — look for FTP-DATA as the protocol.
+
+```bash
+# list FTP commands
+tshark -r capture.pcap -Y "ftp" -T fields -e ftp.request.command -e ftp.request.arg
+
+# extract files transferred over FTP
+tshark -r capture.pcap --export-objects ftp-data,./ftp_objects/
+```

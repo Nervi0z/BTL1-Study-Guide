@@ -1,75 +1,136 @@
-# 📋 Display Filters Cheatsheet (Wireshark / Tshark)
+# Filters Cheatsheet
 
-> **Display Filters** (`Display Filters`) are the most powerful tool for analyzing PCAP files. They are applied _after_ the capture (in the Wireshark GUI or with `tshark -Y`) and allow you to isolate exactly the packets you are interested in, hiding the rest.
-
-**Basic Syntax:**
-
-* **Comparison:** `==` (equal), `!=` (not equal), `>` (greater than), `<` (less than), `>=`, `<=`
-* **Contains:** `contains` (searches for a substring, e.g., `http.host contains "google"`)
-* **Matches (Regex):** `matches` or `~` (uses regular expressions, e.g., `frame matches "[Pp][Aa][Ss][Ss][Ww][Oo][Rr][Dd]"`)
-* **Logical Operators:** `and` (or `&&`), `or` (or `||`), `not` (or `!`)
-* **Fields:** Refer to specific protocol fields (e.g., `ip.src`, `tcp.port`, `http.request.method`). You can explore field names in Wireshark's "Packet Details" pane.
-
-Below are useful filters grouped by category:
-
-## 🌐 IP-Based Filters
-
-| Objective                   | Example Filter                         | Notes                                                                       |
-| :-------------------------- | :------------------------------------- | :-------------------------------------------------------------------------- |
-| Traffic to/from an IP       | `ip.addr == 192.168.1.54`              | Shows all traffic where the IP appears as source **OR** destination.         |
-| Traffic FROM an IP          | `ip.src == 192.168.1.54`               | Only packets originating from that IP.                                      |
-| Traffic TO an IP            | `ip.dst == 10.0.0.10`                  | Only packets destined for that IP.                                          |
-| Traffic within a Subnet     | `ip.addr == 192.168.1.0/24`            | Shows traffic to/from any IP in that CIDR subnet.                            |
-| Exclude an IP               | `not (ip.addr == 192.168.1.1)`         | Hides all traffic related to that IP.                                       |
-
-## 🚦 Port / TCP / UDP Based Filters
-
-| Objective                     | Example Filter                              | Notes                                                                         |
-| :------------------------------ | :------------------------------------------ | :-------------------------------------------------------------------------- |
-| Traffic on a specific port    | `tcp.port == 80`                            | Shows TCP traffic where source OR destination port is 80 (`HTTP`).         |
-|                                 | `udp.port == 53`                            | Shows UDP traffic where source OR destination port is 53 (`DNS`).          |
-|                                 | `port 443`                                  | Simpler, searches for port 443 in TCP or UDP (less precise than `tcp.port`). |
-| TCP traffic only                | `tcp`                                       |                                                                             |
-| UDP traffic only                | `udp`                                       |                                                                             |
-| TCP SYN packets (conn. start) | `tcp.flags.syn == 1 and tcp.flags.ack == 0` | Useful for seeing connection attempts.                                      |
-| TCP RST packets (conn. reset) | `tcp.flags.reset == 1`                      | Can indicate problems or scans.                                             |
-| TCP FIN packets (conn. end)   | `tcp.flags.fin == 1`                        |                                                                             |
-| Traffic from a TCP Stream     | `tcp.stream eq 5`                           | Shows only packets from TCP stream with index 5 (index assigned by Wireshark).|
-
-## 📝 Specific Protocol Filters
-
-| Protocol     | Objective                   | Example Filter                                           | Notes                                                                        |
-| :----------- | :-------------------------- | :------------------------------------------------------- | :--------------------------------------------------------------------------- |
-| **`HTTP`** | All HTTP traffic            | `http`                                                   |                                                                              |
-|              | HTTP Requests only          | `http.request`                                           |                                                                              |
-|              | HTTP Responses only         | `http.response`                                          |                                                                              |
-|              | POST Requests               | `http.request.method == "POST"`                          | Useful for finding data submissions (credentials, forms).                   |
-|              | Error Responses             | `http.response.code >= 400`                              | Looks for client-side (4xx) or server-side (5xx) errors.                   |
-|              | Traffic to/from a Host      | `http.host contains "example.com"`                       | Searches for the hostname in the HTTP `Host` header.                        |
-| **`DNS`** | All DNS traffic             | `dns`                                                    |                                                                              |
-|              | DNS Queries only            | `dns.flags.response == 0`                                |                                                                              |
-|              | DNS Responses only          | `dns.flags.response == 1`                                |                                                                              |
-|              | Query for a Name            | `dns.qry.name == "malware.com"`                          | Searches for queries for a specific domain.                                  |
-|              | Response with an IP         | `dns.resp.addr == 8.8.8.8`                               | Searches for responses containing a specific IP.                             |
-| **`SMB/SMB2`**| All SMB/SMB2 traffic        | `smb or smb2`                                            | Windows file sharing protocol.                                               |
-|              | Specific file access        | `smb2.filename contains ".exe"`                          | Searches SMB2 operations related to `.exe` files.                            |
-|              | CREATE Command              | `smb2.cmd == CREATE`                                     | Searches for attempts to create/open files/directories.                     |
-| **`ARP`** | All ARP traffic             | `arp`                                                    | MAC address resolution on local network.                                      |
-| **`ICMP`** | All ICMP traffic            | `icmp`                                                   | Ping, traceroute, error messages.                                            |
-| **`TLS/SSL`**| All TLS/SSL traffic         | `ssl or tls`                                             | Shows handshakes and encrypted traffic (without content view).              |
-|              | Specific Handshake (SNI)    | `tls.handshake.extensions_server_name contains "site.com"`| Searches for the domain name (SNI) in the TLS handshake (if present).      |
-
-## 🔍 Content / Exclusion / Combination Filters
-
-| Objective                   | Example Filter                                         | Notes                                                                           |
-| :-------------------------- | :----------------------------------------------------- | :------------------------------------------------------------------------------ |
-| Search for a String (Payload)| `frame contains "password"`                            | Searches for "password" (case-insensitive) **anywhere** in the packet. Can be slow! |
-|                             | `tcp contains "USER"`                                  | Searches for "USER" only in the TCP payload.                                    |
-| Exclude Common Protocols    | `not (arp or dns or icmp)`                             | Hides ARP, DNS, and ICMP traffic to focus on other protocols.                     |
-| Exclude Local Traffic       | `not (ip.addr == 192.168.1.0/24)`                      | Hides internal traffic if the local network is 192.168.1.0/24.                    |
-| Combine Filters (Example)   | `ip.src == 10.0.0.5 and tcp.port == 443`               | Traffic from `10.0.0.5` on `TCP` port `443`.                                   |
-|                             | `(http.request or dns.qry.name) and ip.dst == 8.8.8.8` | `HTTP` requests or `DNS` queries destined for `8.8.8.8`.                         |
+Wireshark display filters and BPF capture filters. Display filters work in Wireshark and tshark `-Y`. BPF filters work with tcpdump and tshark `-f` at capture time.
 
 ---
 
-> _Mastering display filters is the most important skill for analyzing PCAPs efficiently. Experiment and combine filters to isolate what you need!_
+## Display filters — by scenario
+
+### Suspicious DNS
+
+```
+dns.qry.name.len > 50
+dns.qry.name matches ".*\.(tk|xyz|top|pw|cc|ru)$"
+dns.qry.type == 16                                  ← TXT records (used in DNS tunneling)
+dns.flags.response == 0 && !dns.qry.name contains "."   ← malformed queries
+dns.count.answers == 0 && dns.flags.rcode != 0     ← NXDOMAIN responses
+```
+
+### HTTP analysis
+
+```
+http.request.method == "POST"
+http.request.method == "POST" && http.content_length > 10000
+http.response.code == 200
+http.response.code >= 400                           ← client/server errors
+http.user_agent contains "python" || http.user_agent contains "curl"
+http.user_agent == ""                               ← empty user agent
+http.request.uri contains "/gate" || http.request.uri contains "/panel"
+http.request.uri matches ".*\.(php|asp|aspx)\?.*"  ← dynamic pages with params
+http && frame.len > 10000                           ← large HTTP transfers
+```
+
+### SMB activity
+
+```
+smb || smb2
+smb2.filename contains ".exe" || smb2.filename contains ".ps1"
+smb2.cmd == 0x05                                    ← SMB2 Create (file open/create)
+smb2.cmd == 0x09                                    ← SMB2 Write
+smb.cmd == 0x25                                     ← SMBv1 Trans2 (file operations)
+smb2.filename contains "ADMIN$" || smb2.filename contains "C$"
+ntlmssp                                             ← NTLM auth in SMB sessions
+```
+
+### Large transfers and exfiltration
+
+```
+frame.len > 1400 && tcp
+tcp.len > 1400
+ip.dst == <external_ip> && frame.len > 100000
+```
+
+### Specific IP or port
+
+```
+ip.addr == 192.168.1.100
+ip.src == 192.168.1.100
+ip.dst == 185.220.101.47
+ip.addr == 10.0.0.0/8                              ← subnet
+tcp.port == 4444
+tcp.dstport == 8080
+udp.port == 53
+!(ip.addr == 10.0.0.0/8)                           ← all non-RFC1918 traffic
+```
+
+### Protocol anomalies
+
+```
+tcp.flags.syn == 1 && tcp.flags.ack == 0           ← SYN only (scan or connection attempt)
+tcp.flags.rst == 1                                  ← connection resets
+tcp.analysis.retransmission                         ← retransmissions
+icmp.type == 8                                      ← ICMP echo requests
+icmp && frame.len > 100                             ← large ICMP (possible tunneling)
+ssl.handshake.type == 1                             ← TLS Client Hello
+ssl.handshake.extensions_server_name               ← has SNI field
+```
+
+### Beaconing patterns
+
+```
+ip.dst == <suspected_c2> && tcp.flags.syn == 1     ← connection attempts over time
+ip.dst == <suspected_c2>                           ← all traffic to a suspected C2
+http.request && ip.dst == <suspected_c2>           ← HTTP C2 traffic
+```
+
+---
+
+## BPF capture filters
+
+These run at capture time and limit what gets written to the PCAP. Use them when you know what you're looking for and want to reduce file size.
+
+```bash
+# capture only traffic to/from a specific host
+tcpdump -i eth0 -w output.pcap host 192.168.1.100
+
+# capture only DNS traffic
+tcpdump -i eth0 -w dns.pcap port 53
+
+# capture only HTTP traffic
+tcpdump -i eth0 -w http.pcap port 80 or port 8080
+
+# capture traffic to an external network (not RFC1918)
+tcpdump -i eth0 -w external.pcap 'not (net 10.0.0.0/8 or net 172.16.0.0/12 or net 192.168.0.0/16)'
+
+# capture SYN packets only (see connection attempts)
+tcpdump -i eth0 -w syns.pcap 'tcp[tcpflags] & tcp-syn != 0'
+
+# capture ICMP
+tcpdump -i eth0 -w icmp.pcap icmp
+
+# capture traffic on multiple ports
+tcpdump -i eth0 -w multi.pcap port 80 or port 443 or port 8080
+```
+
+---
+
+## tshark display filter equivalents
+
+```bash
+# DNS queries (tshark)
+tshark -r capture.pcap -Y "dns.flags.response == 0" -T fields -e dns.qry.name
+
+# HTTP POST requests
+tshark -r capture.pcap -Y "http.request.method == POST" \
+  -T fields -e http.host -e http.request.uri -e http.content_length
+
+# large frames
+tshark -r capture.pcap -Y "frame.len > 1400" -T fields -e ip.src -e ip.dst -e frame.len
+
+# suspicious user agents
+tshark -r capture.pcap -Y 'http.user_agent contains "python" or http.user_agent == ""' \
+  -T fields -e ip.src -e http.user_agent
+
+# all SMB2 file operations
+tshark -r capture.pcap -Y "smb2.cmd == 5" -T fields -e ip.src -e ip.dst -e smb2.filename
+```

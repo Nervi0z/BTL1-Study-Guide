@@ -1,107 +1,118 @@
-# 📉 Recognizing Malicious Traffic Patterns
+# Malicious Traffic Patterns
 
-> Beyond analyzing individual packets or protocols, recognizing **patterns** in network traffic over time or across multiple connections is crucial for detecting malicious activities that might otherwise go unnoticed.
->
-> These patterns often correspond to different phases of a cyberattack (`C2`, lateral movement, exfiltration, etc.).
+Recognizing what malicious network activity looks like in a PCAP — before applying filters.
 
 ---
 
-<details>
-<summary><strong>📡 Command and Control (C2 / C&amp;C) Patterns</strong></summary>
-<br>
+## C2 beaconing
 
-> Once a system is compromised, malware needs to communicate with the attacker to receive commands and/or send data. This `C2` traffic often follows characteristic patterns:
+Malware beacons home to its C2 server at regular intervals to receive commands or confirm the implant is still alive. In a PCAP, beaconing produces a recognizable pattern: repeated connections from the same source to the same destination at consistent time intervals.
 
-* **Beaconing / Heartbeat:**
-    * **Description:** **Regular and periodic** connections from the infected host to an external `C2` server. Can occur every few seconds, minutes, or hours.
-    * **What to Look For:** Repetitive outbound traffic to the same IP/domain with consistent time intervals (delta time). Packet sizes might be small and similar (for check-ins) or vary if downloading commands/sending data. Pay attention to connections outside business hours or to geographically unusual destinations. Common protocols: `HTTP`/`HTTPS`, `DNS`, `ICMP`, or custom `TCP`/`UDP`.
+**What to look for**:
+- Same source IP connecting to the same external IP every N seconds/minutes
+- Consistent byte counts in the requests and responses (keepalive packets are often identical)
+- Connection intervals that are *too* regular — human-driven traffic has natural variation; automated beacons don't
+- Jitter: sophisticated C2 frameworks add randomness to intervals (e.g., ±30% of the base interval) to evade interval-based detection
 
-* **Unusual or Covert Protocols:**
-    * **Description:** Use of non-standard protocols or non-standard ports for `C2` communication to evade detection.
-    * **What to Look For:** Traffic on common ports (`80`, `443`, `53`) that doesn't match the expected protocol (e.g., non-HTTP traffic on port `80`, non-DNS traffic on port `53`). Use of high or random ports for persistent communications. Traffic with payloads that appear obfuscated or encrypted (high entropy) without being standard `TLS`/`SSH`.
+**Common beacon intervals**: 30 seconds, 60 seconds, 5 minutes, 15 minutes. Cobalt Strike's default is 60 seconds; many operators change it.
 
-* **DNS for C2:**
-    * **Description:** Use of `DNS` queries/responses to send and receive commands/data. Includes `DGA` and `DNS Tunneling`.
-    * **What to Look For:** (See DNS section in `04_Specific_Protocol_Analysis.md`) High volume of `NXDomain` responses, random/long domains, heavy use of `TXT` records or long subdomains.
+**Detection approach**:
+```
+Wireshark filter: ip.dst == <suspected_c2> && tcp.flags.syn == 1
 
-</details>
+Use Statistics → Conversations, sort by packets or bytes
+Look for connections with very regular packet timing
+```
 
----
-
-<details>
-<summary><strong>🎯 Network Scanning Patterns</strong></summary>
-<br>
-
-> Attackers (or malware like worms) scan networks to find other vulnerable systems.
-
-* **Horizontal Scanning:**
-    * **Description:** One host tries to connect to **many different hosts** on the network, probing the **same port** or a small set of ports.
-    * **What to Look For:** From a single source IP, a large number of connection attempts (`TCP SYN` packets without `SYN-ACK` responses, or followed by `RST`) to _multiple destination IPs_ (often sequential) on the same subnet or range, all targeting the **same destination port** (e.g., `445`-SMB, `3389`-RDP, `22`-SSH).
-
-* **Vertical Scanning:**
-    * **Description:** One host tries to connect to **many different ports** on a **single destination host**.
-    * **What to Look For:** From a single source IP, a large number of connection attempts to a _single destination IP_, but targeting _different destination ports_.
-
-</details>
+```bash
+# extract connection timestamps to a specific IP for interval analysis
+tshark -r capture.pcap -Y "ip.dst == 185.220.101.47 && tcp.flags.syn == 1" \
+  -T fields -e frame.time_relative | awk 'NR>1{print $0-prev}{prev=$0}'
+```
 
 ---
 
-<details>
-<summary><strong>🚶‍♂️ Lateral Movement Patterns</strong></summary>
-<br>
+## Data exfiltration
 
-> Once inside, attackers try to move to other systems on the internal network.
+**DNS tunneling**:
 
-* **What to Look For:**
-    * Unusual **`SMB`/`RPC`** connections: Between workstations, from unexpected servers to workstations, or targeting administrative shares (`ADMIN$`, `C$`, `IPC$`).
-    * **`RDP` (port `3389`)** connections between systems where it's not usual.
-    * **`SSH` (port `22`)** connections between internal systems if not standard practice.
-    * Traffic associated with remote execution tools like **`PsExec`**, `WinRM`, `WMI`. (`PsExec` often uses `SMB` and creates/starts a service named `PSEXESVC` on the target, though names can change).
-    * Failed authentication attempts followed by success between internal machines.
+Data encoded in DNS query subdomain strings, exfiltrated to an attacker-controlled nameserver that decodes the queries. The C2 can respond via DNS answers.
 
-</details>
+```
+Wireshark filter: dns.qry.name.len > 60
+                  dns.qry.type == 16          ← TXT queries
+```
 
----
+Signs: extremely long subdomains that look like base64 or hex, consistent parent domain, TXT record queries from workstations, nameserver for the domain resolves to an unusual location.
 
-<details>
-<summary><strong>📤 Data Exfiltration Patterns</strong></summary>
-<br>
+**HTTP POST exfiltration**:
 
-> The final goal is often to steal sensitive information.
+Data sent out via POST requests, often to a legitimate-looking domain or compromised site.
 
-* **What to Look For:**
-    * **Large Outbound Transfers:** Unusually large volumes of data sent from the internal network to external destinations, especially if occurring off-hours or to suspicious IPs/domains. Analyze conversation duration and total bytes (`Statistics > Conversations`).
-    * **Unusual Protocols for Transfers:** Use of **`DNS Tunneling`** (lots of data in `TXT`/subdomain queries/responses), **`ICMP Tunneling`** (data in `ICMP` payloads), `FTP`, or custom protocols to get information out.
-    * **Transfers to Cloud/Public Services:** Massive uploads to cloud storage services (Mega, Dropbox, etc.) or pastebins if not normal activity.
-    * **Compression/Encryption:** Exfiltration traffic is often compressed (`.zip`, `.rar`) and/or encrypted. Look for `TLS` connections to suspicious destinations with large data transfers.
+```
+Wireshark filter: http.request.method == "POST" && http.content_length > 50000
+```
 
-</details>
+Follow the TCP stream to see what's in the POST body. Base64-encoded content, compressed data, or JSON with unusual field values are all worth examining.
 
----
+**Large single transfers**:
+```
+Wireshark filter: tcp.len > 100000
+                  frame.len > 1400 && ip.dst != (internal range)
+```
 
-<details>
-<summary><strong>📥 Malware Download / Additional Components Patterns</strong></summary>
-<br>
-
-* **What to Look For:**
-    * `HTTP`/`FTP`/etc. connections downloading executables, DLLs, scripts, or suspicious compressed files from URLs/IPs known to host malware (CTI).
-    * "Staged Payload" pattern: Initial malware (dropper) downloads additional components from different locations after the initial infection.
-
-</details>
+Use Statistics → Conversations sorted by bytes to find the largest transfers in the capture.
 
 ---
 
-<details>
-<summary><strong>🚫 Denial of Service (DoS/DDoS) Patterns</strong></summary>
-<br>
+## Port scanning
 
-> Less Common in Post-Mortem Forensic Analysis.
+A port scan from outside produces a predictable pattern: one source IP sending SYN packets to many destination ports on the same host, in rapid succession, with mostly RST+ACK responses.
 
-* **Description:** Flooding a target with traffic to exhaust its resources.
-* **What to Look For:** Massive volume of packets (`SYN`, `UDP`, `ICMP`) from one or many sources towards a single destination. Often with spoofed source IPs.
+**SYN scan pattern** (nmap default):
+- One SYN packet per port
+- Closed ports respond with RST+ACK
+- Open ports respond with SYN+ACK (sometimes followed by RST from the scanner)
+- Very short time between each probe
 
-</details>
+```
+Wireshark filter: tcp.flags == 0x002 && ip.src == <scanner_ip>    ← all SYN from one source
+                  tcp.flags.syn == 1 && tcp.flags.ack == 0         ← SYN only packets
+```
+
+```bash
+# count SYN packets per destination port from a suspected scanner
+tshark -r capture.pcap -Y "ip.src == 10.10.10.5 && tcp.flags.syn == 1 && tcp.flags.ack == 0" \
+  -T fields -e tcp.dstport | sort | uniq -c | sort -rn | head 20
+```
+
+A service discovery scan looks the same but targets many hosts on a single port.
 
 ---
 
-> _Recognizing these patterns requires observing traffic in context, often using the statistics and time filtering features of **`Wireshark`**/**`tshark`**, or correlating events in a **SIEM** or **IDS**._
+## Lateral movement in PCAP
+
+Lateral movement produces network artifacts depending on the technique used.
+
+**PsExec / SMB lateral movement**:
+```
+Wireshark filter: smb2 && (smb2.filename contains "ADMIN$" || smb2.filename contains "C$")
+                  ntlmssp
+```
+Look for: NTLM authentication to a workstation IP, SMB2 Create/Write to ADMIN$ or C$, followed by service creation (may be visible as additional SMB traffic).
+
+**WMI remote execution**:
+- WMI uses DCOM, which runs over dynamic high ports (TCP 49152+)
+- Look for connections from one host to another on ports above 49000 with DCOM/RPC signatures
+- In Wireshark: `dcerpc` or `epm` protocol labels
+
+**RDP (Remote Desktop)**:
+```
+Wireshark filter: tcp.dstport == 3389 || tcp.srcport == 3389
+```
+RDP is encrypted and you can't read session content, but you can see: which hosts connected to RDP on which targets, timing of connections, duration of sessions, and data volume (session interactive work vs. file transfer have different traffic profiles).
+
+**Pass-the-hash via SMB**:
+- NTLM authentication to a remote host without a preceding Kerberos exchange
+- The NTLM challenge-response is visible in the PCAP
+- Correlate with Windows Event ID 4624 LogonType=3 with NtlmV2 authentication
