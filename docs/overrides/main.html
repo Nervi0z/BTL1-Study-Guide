@@ -1,0 +1,147 @@
+{% extends "main.html" %}
+
+{% block tabs %}
+  {{ super() }}
+
+  <style>
+    .md-main__inner { margin-top: 0; }
+    .md-content { padding-top: 0; }
+  </style>
+
+  <section class="hero-section">
+    <div class="hero-badge">BTL1 Gold · Security Blue Team</div>
+    <h1 class="hero-title">BTL1 Field Notes</h1>
+    <p class="hero-subtitle">
+      Practical reference for the Security Blue Team BTL1 certification
+      and SOC Tier 1 operations. Built from real exam experience.
+      Real commands. Real workflows. No fluff.
+    </p>
+
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="hero-stat-number" data-target="6" data-suffix="">6</div>
+        <div class="hero-stat-label">Domains</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-number" data-target="97" data-suffix="★">97★</div>
+        <div class="hero-stat-label">GitHub Stars</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-number" data-target="25" data-suffix="">25</div>
+        <div class="hero-stat-label">Forks</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-number" data-target="24" data-suffix="h">24h</div>
+        <div class="hero-stat-label">Exam Duration</div>
+      </div>
+    </div>
+
+    <a href="00_Introduction_BTL1/" class="md-button md-button--primary" style="margin-right: 1rem;">
+      Start here
+    </a>
+    <a href="https://github.com/Nervi0z/btl1-field-notes" class="md-button">
+      GitHub ↗
+    </a>
+  </section>
+
+{% endblock %}
+
+{% block content %}
+  <div class="md-content__inner">
+    <article class="md-content__inner md-typeset">
+
+      <h2>Domains</h2>
+      <p>Six core BTL1 domains — each with cheatsheets, workflows and tool references.</p>
+
+      <div class="domain-grid">
+
+        <a href="01_Phishing_Analysis/" class="domain-card">
+          <span class="domain-card-icon">📧</span>
+          <div class="domain-card-title">Phishing Analysis</div>
+          <div class="domain-card-desc">Header analysis, URL defanging, attachment triage, PhishTool workflows.</div>
+          <span class="domain-card-tag tag-violet">Email headers</span>
+          <span class="domain-card-tag tag-cyan">IOC extraction</span>
+        </a>
+
+        <a href="02_Threat_Intelligence/" class="domain-card">
+          <span class="domain-card-icon">🔍</span>
+          <div class="domain-card-title">Threat Intelligence</div>
+          <div class="domain-card-desc">MITRE ATT&CK, IOC enrichment, CTI frameworks, threat actor profiling.</div>
+          <span class="domain-card-tag tag-violet">MITRE ATT&CK</span>
+          <span class="domain-card-tag tag-yellow">TTPs</span>
+        </a>
+
+        <a href="03_Digital_Forensics/" class="domain-card">
+          <span class="domain-card-icon">💾</span>
+          <div class="domain-card-title">Digital Forensics</div>
+          <div class="domain-card-desc">Disk and memory acquisition, Autopsy, Volatility 3, artifact analysis.</div>
+          <span class="domain-card-tag tag-cyan">Volatility</span>
+          <span class="domain-card-tag tag-violet">Autopsy</span>
+        </a>
+
+        <a href="04_SIEM_Analysis/" class="domain-card">
+          <span class="domain-card-icon">📊</span>
+          <div class="domain-card-title">SIEM Analysis</div>
+          <div class="domain-card-desc">Splunk SPL queries, ELK stack, log correlation, alert triage workflows.</div>
+          <span class="domain-card-tag tag-yellow">Splunk SPL</span>
+          <span class="domain-card-tag tag-green">ELK</span>
+        </a>
+
+        <a href="05_Network_Analysis/" class="domain-card">
+          <span class="domain-card-icon">🌐</span>
+          <div class="domain-card-title">Network Analysis</div>
+          <div class="domain-card-desc">Wireshark filters, PCAP analysis, protocol identification, C2 detection.</div>
+          <span class="domain-card-tag tag-cyan">Wireshark</span>
+          <span class="domain-card-tag tag-violet">Display filters</span>
+        </a>
+
+        <a href="06_Incident_Response/" class="domain-card">
+          <span class="domain-card-icon">🚨</span>
+          <div class="domain-card-title">Incident Response</div>
+          <div class="domain-card-desc">IR lifecycle, containment strategies, live response, evidence collection.</div>
+          <span class="domain-card-tag tag-green">IR lifecycle</span>
+          <span class="domain-card-tag tag-yellow">Containment</span>
+        </a>
+
+      </div>
+
+      <h2>Quick reference</h2>
+      <p>Most-used commands across all domains.</p>
+
+      <div class="qref-grid">
+        <div class="qref-card">
+          <code>vol.py -f dump.mem windows.pslist</code>
+          <small>Volatility 3 — process list</small>
+        </div>
+        <div class="qref-card">
+          <code>index=* | stats count by src_ip</code>
+          <small>Splunk — top source IPs</small>
+        </div>
+        <div class="qref-card">
+          <code>tcp.flags.syn==1 && tcp.flags.ack==0</code>
+          <small>Wireshark — SYN scan detection</small>
+        </div>
+        <div class="qref-card">
+          <code>strings -n 8 artifact.bin | grep -E 'http|cmd'</code>
+          <small>Quick artifact triage</small>
+        </div>
+        <div class="qref-card">
+          <code>sha256sum suspicious.exe</code>
+          <small>Hash for VT lookup</small>
+        </div>
+        <div class="qref-card">
+          <code>vol.py -f dump.mem windows.netscan</code>
+          <small>Volatility 3 — network connections</small>
+        </div>
+      </div>
+
+      <hr/>
+      <p style="color: var(--md-default-fg-color--lighter); font-size: 0.82rem;">
+        Built by <a href="https://github.com/Nervi0z">@Nervi0z</a> ·
+        Security Analyst · VAR Group Madrid ·
+        <em>find it // prove it // chase the fix</em>
+      </p>
+
+    </article>
+  </div>
+{% endblock %}
