@@ -2,14 +2,14 @@ site_name: BTL1 Field Notes
 site_description: >-
   Practical field reference for the Security Blue Team BTL1 certification
   and SOC Tier 1 operations. Real commands, real workflows, no fluff.
-site_url: https://nervi0z.github.io/btl1-field-notes
+site_url: https://nervi0z.github.io/btl1-field-notes/
 site_author: Nervi0z
 repo_name: Nervi0z/btl1-field-notes
 repo_url: https://github.com/Nervi0z/btl1-field-notes
 edit_uri: edit/main/docs/
 
 copyright: >
-  <a href="https://github.com/Nervi0z">@Nervi0z</a> · Security Analyst · VAR Group Madrid
+  <a href="https://github.com/Nervi0z">@Nervi0z</a> &middot; Security Analyst &middot; VAR Group Madrid
 
 theme:
   name: material
@@ -41,7 +41,6 @@ theme:
     - navigation.tabs
     - navigation.tabs.sticky
     - navigation.sections
-    - navigation.expand
     - navigation.top
     - navigation.footer
     - navigation.indexes
@@ -53,16 +52,9 @@ theme:
     - content.tabs.link
     - toc.follow
     - header.autohide
-    - announce.dismiss
 
   icon:
     repo: fontawesome/brands/github
-    edit: material/pencil
-    admonition:
-      note: octicons/tag-16
-      tip: octicons/squirrel-16
-      warning: octicons/alert-16
-      danger: octicons/zap-16
 
 extra_css:
   - assets/custom.css
@@ -73,7 +65,6 @@ extra_javascript:
 plugins:
   - search:
       lang: en
-      separator: '[\s\-\.]+'
   - glightbox
   - minify:
       minify_html: true
@@ -81,11 +72,7 @@ plugins:
 markdown_extensions:
   - admonition
   - pymdownx.details
-  - pymdownx.superfences:
-      custom_fences:
-        - name: mermaid
-          class: mermaid
-          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.superfences
   - pymdownx.highlight:
       anchor_linenums: true
       line_spans: __span
@@ -101,7 +88,6 @@ markdown_extensions:
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - pymdownx.keys
   - pymdownx.mark
-  - pymdownx.critic
   - attr_list
   - md_in_html
   - def_list
@@ -119,33 +105,14 @@ extra:
     - icon: fontawesome/brands/linkedin
       link: https://linkedin.com/in/miguel-alameda
       name: LinkedIn
-  analytics:
-    feedback:
-      title: Was this page useful?
-      ratings:
-        - icon: material/thumb-up-outline
-          name: Yes
-          data: 1
-          note: Thanks for the feedback.
-        - icon: material/thumb-down-outline
-          name: No
-          data: 0
-          note: Thanks. Help improve this page by opening an issue.
   generator: false
 
 nav:
   - Home: index.md
-  - Introduction:
-    - 00_Introduction_BTL1/index.md
-  - Phishing Analysis:
-    - 01_Phishing_Analysis/index.md
-  - Threat Intelligence:
-    - 02_Threat_Intelligence/index.md
-  - Digital Forensics:
-    - 03_Digital_Forensics/index.md
-  - SIEM Analysis:
-    - 04_SIEM_Analysis/index.md
-  - Network Analysis:
-    - 05_Network_Analysis/index.md
-  - Incident Response:
-    - 06_Incident_Response/index.md
+  - Introduction: 00_Introduction_BTL1/index.md
+  - Phishing Analysis: 01_Phishing_Analysis/index.md
+  - Threat Intelligence: 02_Threat_Intelligence/index.md
+  - Digital Forensics: 03_Digital_Forensics/index.md
+  - SIEM Analysis: 04_SIEM_Analysis/index.md
+  - Network Analysis: 05_Network_Analysis/index.md
+  - Incident Response: 06_Incident_Response/index.md
