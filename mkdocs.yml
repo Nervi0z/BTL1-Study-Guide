@@ -4,7 +4,8 @@ site_description: >-
   and SOC Tier 1 operations. Real commands, real workflows, no fluff.
 site_url: https://nervi0z.github.io/btl1-field-notes/
 site_author: Nervi0z
-docs_dir: .
+docs_dir: docs
+site_dir: site
 repo_name: Nervi0z/btl1-field-notes
 repo_url: https://github.com/Nervi0z/btl1-field-notes
 edit_uri: edit/main/docs/
