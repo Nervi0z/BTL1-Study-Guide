@@ -1,14 +1,12 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 
 {% block styles %}
   {{ super() }}
   <style>
-    /* â”€â”€ Reset hero area â”€â”€ */
     .md-main { margin-top: 0; }
     .md-content__inner { padding: 0; margin: 0; }
     .md-typeset h1:first-child { display: none; }
 
-    /* â”€â”€ Terminal grid background â”€â”€ */
     .hero {
       position: relative;
       min-height: 100vh;
@@ -20,7 +18,6 @@
       overflow: hidden;
       background: #020810;
     }
-
     .hero::before {
       content: '';
       position: absolute;
@@ -32,7 +29,6 @@
       opacity: 0.4;
       pointer-events: none;
     }
-
     .hero::after {
       content: '';
       position: absolute;
@@ -42,8 +38,6 @@
         radial-gradient(ellipse at 85% 40%, #06B6D418 0%, transparent 55%);
       pointer-events: none;
     }
-
-    /* â”€â”€ Scanline animation â”€â”€ */
     .hero-scan {
       position: absolute;
       left: 0; right: 0;
@@ -59,14 +53,7 @@
       95%  { opacity: 1; }
       100% { top: 100%; opacity: 0; }
     }
-
-    /* â”€â”€ Hero content â”€â”€ */
-    .hero-inner {
-      position: relative;
-      z-index: 2;
-      max-width: 780px;
-    }
-
+    .hero-inner { position: relative; z-index: 2; max-width: 780px; }
     .hero-prompt {
       font-family: 'JetBrains Mono', monospace;
       font-size: 0.78rem;
@@ -81,14 +68,12 @@
     .hero-prompt-cmd { color: #22C55E; }
     .hero-prompt-cursor {
       display: inline-block;
-      width: 8px;
-      height: 14px;
+      width: 8px; height: 14px;
       background: #06B6D4;
       animation: blink 1.2s step-end infinite;
       vertical-align: middle;
     }
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
-
     .hero-eyebrow {
       font-family: 'JetBrains Mono', monospace;
       font-size: 0.7rem;
@@ -104,11 +89,9 @@
     .hero-eyebrow::before {
       content: '';
       display: inline-block;
-      width: 24px;
-      height: 1px;
+      width: 24px; height: 1px;
       background: #7C3AED;
     }
-
     .hero-title {
       font-family: 'JetBrains Mono', monospace;
       font-size: clamp(2.8rem, 5.5vw, 4.5rem);
@@ -124,7 +107,6 @@
       -webkit-text-fill-color: transparent;
       background-clip: text;
     }
-
     .hero-sub {
       font-size: 1.05rem;
       color: #64748b;
@@ -133,19 +115,8 @@
       margin-bottom: 2.5rem;
     }
     .hero-sub strong { color: #94a3b8; font-weight: 500; }
-
-    /* â”€â”€ Stats row â”€â”€ */
-    .hero-stats {
-      display: flex;
-      gap: 2.5rem;
-      margin-bottom: 3rem;
-      flex-wrap: wrap;
-    }
-    .stat {
-      display: flex;
-      flex-direction: column;
-      gap: 0.2rem;
-    }
+    .hero-stats { display: flex; gap: 2.5rem; margin-bottom: 3rem; flex-wrap: wrap; }
+    .stat { display: flex; flex-direction: column; gap: 0.2rem; }
     .stat-n {
       font-family: 'JetBrains Mono', monospace;
       font-size: 1.6rem;
@@ -163,17 +134,10 @@
       text-transform: uppercase;
       color: #334155;
     }
-
-    /* â”€â”€ CTA buttons â”€â”€ */
-    .hero-cta {
-      display: flex;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }
+    .hero-cta { display: flex; gap: 1rem; flex-wrap: wrap; }
     .btn-primary {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 0.8rem;
-      font-weight: 600;
+      font-size: 0.8rem; font-weight: 600;
       letter-spacing: 0.05em;
       padding: 0.7rem 1.5rem;
       background: linear-gradient(135deg, #7C3AED, #5B21B6);
@@ -182,19 +146,15 @@
       text-decoration: none !important;
       border: 1px solid #7C3AED;
       transition: all 0.2s;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
+      display: inline-flex; align-items: center; gap: 0.5rem;
     }
     .btn-primary:hover {
       background: linear-gradient(135deg, #8B45F0, #6D28D9);
       box-shadow: 0 0 24px #7C3AED44;
-      text-decoration: none !important;
     }
     .btn-ghost {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 0.8rem;
-      font-weight: 500;
+      font-size: 0.8rem; font-weight: 500;
       letter-spacing: 0.05em;
       padding: 0.7rem 1.5rem;
       background: transparent;
@@ -204,62 +164,30 @@
       border: 1px solid #1e2d3d;
       transition: all 0.2s;
     }
-    .btn-ghost:hover {
-      border-color: #7C3AED66;
-      color: #e6edf3 !important;
-      text-decoration: none !important;
-    }
+    .btn-ghost:hover { border-color: #7C3AED66; color: #e6edf3 !important; }
 
-    /* â”€â”€ Domains section â”€â”€ */
-    .domains {
-      background: #020810;
-      padding: 5rem 4rem;
-      position: relative;
-    }
+    .domains { background: #020810; padding: 5rem 4rem; position: relative; }
     .domains::before {
       content: '';
       position: absolute;
-      top: 0; left: 4rem; right: 4rem;
-      height: 1px;
+      top: 0; left: 4rem; right: 4rem; height: 1px;
       background: linear-gradient(90deg, transparent, #7C3AED44, #06B6D444, transparent);
     }
-
     .section-label {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 0.68rem;
-      font-weight: 600;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: #06B6D4;
-      margin-bottom: 0.75rem;
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
+      font-size: 0.68rem; font-weight: 600;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: #06B6D4; margin-bottom: 0.75rem;
+      display: flex; align-items: center; gap: 0.75rem;
     }
-    .section-label::before {
-      content: '';
-      display: inline-block;
-      width: 16px;
-      height: 1px;
-      background: #06B6D4;
-    }
-
+    .section-label::before { content: ''; display: inline-block; width: 16px; height: 1px; background: #06B6D4; }
     .section-title {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 1.8rem;
-      font-weight: 800;
-      color: #e6edf3;
-      margin-bottom: 0.5rem;
+      font-size: 1.8rem; font-weight: 800;
+      color: #e6edf3; margin-bottom: 0.5rem;
       letter-spacing: -0.03em;
     }
-
-    .section-sub {
-      font-size: 0.9rem;
-      color: #475569;
-      margin-bottom: 3rem;
-    }
-
-    /* â”€â”€ Domain cards â”€â”€ */
+    .section-sub { font-size: 0.9rem; color: #475569; margin-bottom: 3rem; }
     .cards {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -269,235 +197,78 @@
       border-radius: 8px;
       overflow: hidden;
     }
-
     .card {
       background: #020810;
       padding: 2rem;
       text-decoration: none !important;
       display: block;
       transition: background 0.15s;
-      position: relative;
-      overflow: hidden;
+      position: relative; overflow: hidden;
     }
-
     .card::after {
       content: '';
       position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 2px;
+      top: 0; left: 0; right: 0; height: 2px;
       background: linear-gradient(90deg, #7C3AED, #06B6D4);
-      opacity: 0;
-      transition: opacity 0.2s;
+      opacity: 0; transition: opacity 0.2s;
     }
-
     .card:hover { background: #040d1a; }
     .card:hover::after { opacity: 1; }
-
-    .card-num {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.65rem;
-      color: #1e2d3d;
-      letter-spacing: 0.1em;
-      margin-bottom: 1rem;
-    }
-
-    .card-title {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 1rem;
-      font-weight: 700;
-      color: #e6edf3 !important;
-      margin-bottom: 0.6rem;
-      text-decoration: none !important;
-    }
-
-    .card-desc {
-      font-size: 0.82rem;
-      color: #475569;
-      line-height: 1.6;
-      margin-bottom: 1.25rem;
-    }
-
-    .card-tools {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.4rem;
-    }
-
-    .tool {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.62rem;
-      letter-spacing: 0.05em;
-      padding: 0.2rem 0.55rem;
-      border-radius: 3px;
-      border: 1px solid;
-    }
+    .card-num { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color: #1e2d3d; letter-spacing: 0.1em; margin-bottom: 1rem; }
+    .card-title { font-family: 'JetBrains Mono', monospace; font-size: 1rem; font-weight: 700; color: #e6edf3 !important; margin-bottom: 0.6rem; text-decoration: none !important; }
+    .card-desc { font-size: 0.82rem; color: #475569; line-height: 1.6; margin-bottom: 1.25rem; }
+    .card-tools { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .tool { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; letter-spacing: 0.05em; padding: 0.2rem 0.55rem; border-radius: 3px; border: 1px solid; }
     .tool-v { color: #a78bfa; border-color: #7C3AED44; background: #7C3AED0d; }
     .tool-c { color: #06B6D4; border-color: #06B6D444; background: #06B6D40d; }
     .tool-g { color: #22C55E; border-color: #22C55E44; background: #22C55E0d; }
     .tool-y { color: #EAB308; border-color: #EAB30844; background: #EAB3080d; }
 
-    /* â”€â”€ Quick ref section â”€â”€ */
-    .qref {
-      background: #020810;
-      padding: 5rem 4rem;
-      position: relative;
-    }
-    .qref::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 4rem; right: 4rem;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, #0d1f3c, transparent);
-    }
-
-    .terminal {
-      background: #0d1117;
-      border: 1px solid #0d1f3c;
-      border-radius: 8px;
-      overflow: hidden;
-      max-width: 720px;
-    }
-
-    .terminal-bar {
-      background: #040d1a;
-      border-bottom: 1px solid #0d1f3c;
-      padding: 0.6rem 1rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
+    .qref { background: #020810; padding: 5rem 4rem; position: relative; }
+    .qref::before { content: ''; position: absolute; top: 0; left: 4rem; right: 4rem; height: 1px; background: linear-gradient(90deg, transparent, #0d1f3c, transparent); }
+    .terminal { background: #0d1117; border: 1px solid #0d1f3c; border-radius: 8px; overflow: hidden; max-width: 720px; }
+    .terminal-bar { background: #040d1a; border-bottom: 1px solid #0d1f3c; padding: 0.6rem 1rem; display: flex; align-items: center; gap: 0.5rem; }
     .dot { width: 10px; height: 10px; border-radius: 50%; }
     .dot-r { background: #dc2626; }
     .dot-y { background: #EAB308; }
     .dot-g { background: #22C55E; }
-    .terminal-title {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.7rem;
-      color: #334155;
-      margin-left: 0.5rem;
-    }
-
-    .terminal-body {
-      padding: 1.5rem;
-    }
-
-    .cmd-line {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.8rem;
-      margin-bottom: 1rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.15rem;
-    }
+    .terminal-title { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: #334155; margin-left: 0.5rem; }
+    .terminal-body { padding: 1.5rem; }
+    .cmd-line { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; margin-bottom: 1rem; display: flex; flex-direction: column; gap: 0.15rem; }
     .cmd-line:last-child { margin-bottom: 0; }
-
     .cmd { color: #22C55E; }
     .cmd-comment { color: #334155; font-size: 0.72rem; }
 
-    /* â”€â”€ About section â”€â”€ */
-    .about {
-      background: #020810;
-      padding: 5rem 4rem;
-      position: relative;
-    }
-    .about::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 4rem; right: 4rem;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, #0d1f3c, transparent);
-    }
-
-    .about-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 4rem;
-      align-items: start;
-      max-width: 860px;
-    }
-
+    .about { background: #020810; padding: 5rem 4rem; position: relative; }
+    .about::before { content: ''; position: absolute; top: 0; left: 4rem; right: 4rem; height: 1px; background: linear-gradient(90deg, transparent, #0d1f3c, transparent); }
+    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: start; max-width: 860px; }
     @media (max-width: 768px) {
       .hero { padding: 5rem 1.5rem 3rem; }
       .domains, .qref, .about { padding: 3rem 1.5rem; }
       .about-grid { grid-template-columns: 1fr; gap: 2rem; }
       .hero-title { font-size: 2.2rem; }
     }
-
-    .about-text {
-      font-size: 0.9rem;
-      color: #64748b;
-      line-height: 1.8;
-    }
+    .about-text { font-size: 0.9rem; color: #64748b; line-height: 1.8; }
     .about-text p { margin-bottom: 1rem; }
     .about-text strong { color: #94a3b8; font-weight: 500; }
+    .about-meta { display: flex; flex-direction: column; gap: 1rem; }
+    .meta-item { display: flex; flex-direction: column; gap: 0.2rem; padding: 1rem 1.25rem; background: #040d1a; border: 1px solid #0d1f3c; border-left: 2px solid #7C3AED; border-radius: 0 4px 4px 0; }
+    .meta-label { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase; color: #334155; }
+    .meta-value { font-size: 0.85rem; color: #94a3b8; font-weight: 500; }
 
-    .about-meta {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    .meta-item {
-      display: flex;
-      flex-direction: column;
-      gap: 0.2rem;
-      padding: 1rem 1.25rem;
-      background: #040d1a;
-      border: 1px solid #0d1f3c;
-      border-left: 2px solid #7C3AED;
-      border-radius: 0 4px 4px 0;
-    }
-
-    .meta-label {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.62rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: #334155;
-    }
-
-    .meta-value {
-      font-size: 0.85rem;
-      color: #94a3b8;
-      font-weight: 500;
-    }
-
-    /* â”€â”€ Footer strip â”€â”€ */
-    .site-footer {
-      background: #020810;
-      border-top: 1px solid #0d1f3c;
-      padding: 2rem 4rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 1rem;
-    }
-
-    .footer-brand {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.75rem;
-      color: #334155;
-    }
+    .site-footer { background: #020810; border-top: 1px solid #0d1f3c; padding: 2rem 4rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+    .footer-brand { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: #334155; }
     .footer-brand a { color: #7C3AED !important; text-decoration: none; }
     .footer-brand a:hover { color: #a78bfa !important; }
-
-    .footer-tagline {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.7rem;
-      color: #1e2d3d;
-      letter-spacing: 0.05em;
-    }
+    .footer-tagline { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: #1e2d3d; letter-spacing: 0.05em; }
   </style>
 {% endblock %}
 
 {% block content %}
 <div class="hero-scan"></div>
 
-<!-- â”€â”€ HERO â”€â”€ -->
 <section class="hero">
   <div class="hero-inner">
-
     <div class="hero-prompt">
       <span class="hero-prompt-path">~/security/analysts/madrid</span>
       <span class="hero-prompt-dollar">$</span>
@@ -505,7 +276,7 @@
       <span class="hero-prompt-cursor"></span>
     </div>
 
-    <div class="hero-eyebrow">BTL1 Gold &nbsp;Â·&nbsp; Security Blue Team</div>
+    <div class="hero-eyebrow">BTL1 Gold &nbsp;&middot;&nbsp; Security Blue Team</div>
 
     <h1 class="hero-title">
       <span class="hero-title-accent">BTL1</span><br>
@@ -519,44 +290,24 @@
     </p>
 
     <div class="hero-stats">
-      <div class="stat">
-        <span class="stat-n">6</span>
-        <span class="stat-l">Domains</span>
-      </div>
-      <div class="stat">
-        <span class="stat-n">97â˜…</span>
-        <span class="stat-l">GitHub Stars</span>
-      </div>
-      <div class="stat">
-        <span class="stat-n">25</span>
-        <span class="stat-l">Forks</span>
-      </div>
-      <div class="stat">
-        <span class="stat-n">24h</span>
-        <span class="stat-l">Exam Duration</span>
-      </div>
+      <div class="stat"><span class="stat-n">6</span><span class="stat-l">Domains</span></div>
+      <div class="stat"><span class="stat-n">97&#9733;</span><span class="stat-l">GitHub Stars</span></div>
+      <div class="stat"><span class="stat-n">25</span><span class="stat-l">Forks</span></div>
+      <div class="stat"><span class="stat-n">24h</span><span class="stat-l">Exam Duration</span></div>
     </div>
 
     <div class="hero-cta">
-      <a href="{{ base_url }}00_Introduction_BTL1/" class="btn-primary">
-        Start here &nbsp;â†’
-      </a>
-      <a href="https://github.com/Nervi0z/btl1-field-notes" class="btn-ghost" target="_blank">
-        GitHub &nbsp;â†—
-      </a>
+      <a href="{{ base_url }}00_Introduction_BTL1/" class="btn-primary">Start here &nbsp;&#8594;</a>
+      <a href="https://github.com/Nervi0z/btl1-field-notes" class="btn-ghost" target="_blank">GitHub &nbsp;&#8599;</a>
     </div>
-
   </div>
 </section>
 
-<!-- â”€â”€ DOMAINS â”€â”€ -->
 <section class="domains">
   <div class="section-label">Coverage</div>
   <div class="section-title">Six exam domains</div>
   <p class="section-sub">Each domain contains cheatsheets, command references and investigation workflows.</p>
-
   <div class="cards">
-
     <a href="{{ base_url }}01_Phishing_Analysis/" class="card">
       <div class="card-num">01 &mdash; PHISHING ANALYSIS</div>
       <div class="card-title">Phishing Analysis</div>
@@ -567,7 +318,6 @@
         <span class="tool tool-g">PhishTool</span>
       </div>
     </a>
-
     <a href="{{ base_url }}02_Threat_Intelligence/" class="card">
       <div class="card-num">02 &mdash; THREAT INTELLIGENCE</div>
       <div class="card-title">Threat Intelligence</div>
@@ -578,7 +328,6 @@
         <span class="tool tool-c">VirusTotal</span>
       </div>
     </a>
-
     <a href="{{ base_url }}03_Digital_Forensics/" class="card">
       <div class="card-num">03 &mdash; DIGITAL FORENSICS</div>
       <div class="card-title">Digital Forensics</div>
@@ -589,7 +338,6 @@
         <span class="tool tool-g">Chain of custody</span>
       </div>
     </a>
-
     <a href="{{ base_url }}04_SIEM_Analysis/" class="card">
       <div class="card-num">04 &mdash; SIEM ANALYSIS</div>
       <div class="card-title">SIEM Analysis</div>
@@ -600,7 +348,6 @@
         <span class="tool tool-c">Event IDs</span>
       </div>
     </a>
-
     <a href="{{ base_url }}05_Network_Analysis/" class="card">
       <div class="card-num">05 &mdash; NETWORK ANALYSIS</div>
       <div class="card-title">Network Analysis</div>
@@ -611,7 +358,6 @@
         <span class="tool tool-g">C2 detection</span>
       </div>
     </a>
-
     <a href="{{ base_url }}06_Incident_Response/" class="card">
       <div class="card-num">06 &mdash; INCIDENT RESPONSE</div>
       <div class="card-title">Incident Response</div>
@@ -622,16 +368,13 @@
         <span class="tool tool-v">Live response</span>
       </div>
     </a>
-
   </div>
 </section>
 
-<!-- â”€â”€ QUICK REF â”€â”€ -->
 <section class="qref">
   <div class="section-label">Quick reference</div>
   <div class="section-title">Commands you use every day</div>
   <p class="section-sub">The most-reached-for commands across all six domains.</p>
-
   <div class="terminal">
     <div class="terminal-bar">
       <span class="dot dot-r"></span>
@@ -642,19 +385,19 @@
     <div class="terminal-body">
       <div class="cmd-line">
         <span class="cmd">vol.py -f dump.mem windows.pslist.PsList</span>
-        <span class="cmd-comment"># Volatility 3 â€” list running processes</span>
+        <span class="cmd-comment"># Volatility 3 &mdash; list running processes</span>
       </div>
       <div class="cmd-line">
         <span class="cmd">vol.py -f dump.mem windows.netscan.NetScan</span>
-        <span class="cmd-comment"># Volatility 3 â€” network connections</span>
+        <span class="cmd-comment"># Volatility 3 &mdash; network connections</span>
       </div>
       <div class="cmd-line">
         <span class="cmd">index=windows EventCode=4625 | stats count by src_ip | sort -count</span>
-        <span class="cmd-comment"># Splunk â€” brute force detection</span>
+        <span class="cmd-comment"># Splunk &mdash; brute force detection</span>
       </div>
       <div class="cmd-line">
         <span class="cmd">tcp.flags.syn==1 &amp;&amp; tcp.flags.ack==0</span>
-        <span class="cmd-comment"># Wireshark â€” SYN scan detection</span>
+        <span class="cmd-comment"># Wireshark &mdash; SYN scan detection</span>
       </div>
       <div class="cmd-line">
         <span class="cmd">strings -n 8 artifact.bin | grep -Ei 'http|powershell|cmd'</span>
@@ -668,30 +411,15 @@
   </div>
 </section>
 
-<!-- â”€â”€ ABOUT â”€â”€ -->
 <section class="about">
   <div class="section-label">Background</div>
   <div class="section-title">Why this exists</div>
-
   <div class="about-grid">
     <div class="about-text">
-      <p>
-        These notes were built during preparation for the BTL1 exam and refined
-        over several years working as a <strong>Tier 1 SOC analyst</strong> in
-        detection and response at VAR Group, Madrid.
-      </p>
-      <p>
-        The goal was never to replace the course material â€” it was to have a
-        <strong>fast reference</strong> during live investigations. When an alert
-        fires at 2am, you need the Volatility plugin name, not a paragraph
-        explaining what memory forensics is.
-      </p>
-      <p>
-        If you are preparing for BTL1 or working in a SOC,
-        use it, fork it, improve it.
-      </p>
+      <p>These notes were built during preparation for the BTL1 exam and refined over several years working as a <strong>Tier 1 SOC analyst</strong> in detection and response at VAR Group, Madrid.</p>
+      <p>The goal was never to replace the course material &mdash; it was to have a <strong>fast reference</strong> during live investigations. When an alert fires at 2am, you need the Volatility plugin name, not a paragraph explaining what memory forensics is.</p>
+      <p>If you are preparing for BTL1 or working in a SOC, use it, fork it, improve it.</p>
     </div>
-
     <div class="about-meta">
       <div class="meta-item">
         <span class="meta-label">Author</span>
@@ -699,15 +427,15 @@
       </div>
       <div class="meta-item">
         <span class="meta-label">Role</span>
-        <span class="meta-value">Security Analyst Â· VAR Group Madrid</span>
+        <span class="meta-value">Security Analyst &middot; VAR Group Madrid</span>
       </div>
       <div class="meta-item">
         <span class="meta-label">Certification</span>
-        <span class="meta-value">BTL1 Gold Â· SAL1</span>
+        <span class="meta-value">BTL1 Gold &middot; SAL1</span>
       </div>
       <div class="meta-item">
         <span class="meta-label">Focus</span>
-        <span class="meta-value">Vulnerability Management Â· Detection Â· SOC</span>
+        <span class="meta-value">Vulnerability Management &middot; Detection &middot; SOC</span>
       </div>
       <div class="meta-item" style="border-left-color: #06B6D4;">
         <span class="meta-label">License</span>
@@ -717,7 +445,6 @@
   </div>
 </section>
 
-<!-- â”€â”€ FOOTER â”€â”€ -->
 <footer class="site-footer">
   <div class="footer-brand">
     <a href="https://github.com/Nervi0z">@Nervi0z</a>
@@ -729,4 +456,3 @@
 {% endblock %}
 
 {% block footer %}{% endblock %}
-
